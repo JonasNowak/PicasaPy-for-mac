@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+
 import json
 import re
 import shutil
@@ -127,20 +129,62 @@ def _varjon_diagnosztikara(
     )
     raise TimeoutError(f"{timeout:.0f} másodpercen belül nem teljesült: {leiras}")
 
-def _eloterbe_hoz(pid: int) -> None:
+def _eloterbe_hoz(pid: int, *, user32=None, kernel32=None):
+    """A PicasaPy ablakát előtérbe hozza, és ellenőrzi is (#6487).
+
+    A Windows előtérzára (foreground lock) a sima `SetForegroundWindow`-t
+    megtagadja, ha közben más folyamat kapott valódi bemenetet (például a
+    kattintásos telepítőpróba után). Ezért a hívó szálat ideiglenesen az
+    előtérben lévő ablak szálához csatoljuk, és megnézzük, sikerült-e.
+    """
     import ctypes
 
-    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    if user32 is None:
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+    if kernel32 is None:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
     ablakok = _ablakikonok(pid)
-    for hwnd, adat in ablakok.items():
-        if adat["cim"].startswith("PicasaPy"):
+    if not ablakok:
+        # a megadott PID-hez nem tartozik látható ablak (pl. indító folyamat): a régi
+        # viselkedés marad, a kattintási pont ellenőrzése úgyis megfogja a tévedést
+        return None
+    hwnd = next((h for h, a in ablakok.items() if a["cim"].startswith("PicasaPy")), next(iter(ablakok)))
+    if user32.GetForegroundWindow() == hwnd:
+        return hwnd
+    sajat = kernel32.GetCurrentThreadId()
+    for _ in range(20):
+        elol = user32.GetForegroundWindow()
+        cel = user32.GetWindowThreadProcessId(elol, None)
+        user32.AttachThreadInput(sajat, cel, True)
+        try:
             user32.ShowWindow(hwnd, 9)
+            user32.BringWindowToTop(hwnd)
             user32.SetForegroundWindow(hwnd)
-            return
-    if ablakok:
-        hwnd = next(iter(ablakok))
-        user32.ShowWindow(hwnd, 9)
-        user32.SetForegroundWindow(hwnd)
+        finally:
+            user32.AttachThreadInput(sajat, cel, False)
+        if user32.GetForegroundWindow() == hwnd:
+            return hwnd
+        _szunet(0.1)
+    raise RuntimeError("a PicasaPy ablaka 2 s alatt sem hozható előtérbe (előtérzár)")
+
+
+def _pont_folyamata(user32, x: int, y: int) -> tuple[int, str, str]:
+    """Melyik folyamat ablaka van a képernyő (x, y) pontján: PID, cím, osztály."""
+    import ctypes
+    from ctypes import wintypes
+
+    user32.WindowFromPoint.argtypes = [wintypes.POINT]
+    user32.WindowFromPoint.restype = wintypes.HWND
+    hwnd = user32.WindowFromPoint(wintypes.POINT(x, y))
+    folyamat = wintypes.DWORD()
+    user32.GetWindowThreadProcessId(hwnd, ctypes.byref(folyamat))
+    gyoker = user32.GetAncestor(hwnd, 2)
+    cim = ctypes.create_unicode_buffer(256)
+    user32.GetWindowTextW(gyoker, cim, 256)
+    osztaly = ctypes.create_unicode_buffer(256)
+    user32.GetClassNameW(gyoker, osztaly, 256)
+    return folyamat.value, cim.value, osztaly.value
+
 
 def _valodi_eger_kattintas(obj: dict, pid: int) -> None:
     """Windows egér-eseménnyel kattint, QML-slotot nem hív közvetlenül."""
@@ -155,6 +199,12 @@ def _valodi_eger_kattintas(obj: dict, pid: int) -> None:
     _eloterbe_hoz(pid)
     if not user32.SetCursorPos(x, y):
         raise OSError(ctypes.get_last_error(), "SetCursorPos nem sikerült")
+    # #6487: a kattintás csak akkor mehet ki, ha a pont tényleg a PicasaPy ablakára esik
+    gazda, cim, osztaly = _pont_folyamata(user32, x, y)
+    if gazda != pid and not osztaly.startswith("Qt"):
+        raise RuntimeError(
+            f"a kattintási pont ({x}, {y}) nem a PicasaPy ablakára esik, hanem: {cim!r} (PID {gazda})"
+        )
     user32.mouse_event(0x0002, 0, 0, 0, 0)  # MOUSEEVENTF_LEFTDOWN
     user32.mouse_event(0x0004, 0, 0, 0, 0)  # MOUSEEVENTF_LEFTUP
     print(f"  valódi egérkattintás: {obj.get('name') or obj.get('text')} ({x}, {y})", flush=True)
@@ -222,6 +272,29 @@ def _kepernyokep_mentese(cel: Path, pid: int) -> None:
     kep.save(cel, "PNG", optimize=True)
     print(f"  képernyőkép: {cel.name} ({kep.width}×{kep.height})", flush=True)
 
+
+def _varjon_frissitesi_ablakra(timeout: float = 30.0) -> int:
+    """Határidőig keresi a külön folyamatú frissítésjelző ablakot."""
+    import ctypes
+    from ctypes import wintypes
+
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    find_window = user32.FindWindowW
+    find_window.argtypes = (wintypes.LPCWSTR, wintypes.LPCWSTR)
+    find_window.restype = wintypes.HWND
+    is_window_visible = user32.IsWindowVisible
+    is_window_visible.argtypes = (wintypes.HWND,)
+    is_window_visible.restype = wintypes.BOOL
+    cimkek = ("PicasaPy frissítése", "PicasaPy update")
+    hatarido = time.monotonic() + timeout
+    while time.monotonic() < hatarido:
+        for cim in cimkek:
+            hwnd = find_window(None, cim)
+            if hwnd and is_window_visible(hwnd):
+                return int(hwnd)
+        time.sleep(0.05)
+    raise TimeoutError(f"{timeout:.0f} s alatt nem jelent meg a frissítési jelzőablak")
+
 def _help_menu(adat: dict) -> dict | None:
     for obj in reversed(adat.get("objects", [])):
         cimke = str(obj.get("text") or obj.get("title") or "")
@@ -270,8 +343,14 @@ def frissites(
     munka: Path,
     elvart_verzio: str | None,
     kepernyokep_mappa: Path | None = None,
+    valodi_cel_verzio: str | None = None,
+    kozben_inditas: bool = False,
 ) -> int:
-    """Teljes, valódi egérkattintásos Windows-frissítési próba (#6383)."""
+    """Teljes, valódi egérkattintásos Windows-frissítési próba (#6383).
+
+    `kozben_inditas` (#6458): a régi program kilépése után a próba azonnal
+    újraindítja a régi programot, ahogy a tulajdonos tette, mert a frissítés
+    alatt semmi nem látszott. A frissítésnek ekkor is végig kell mennie."""
     if _platform() != "win32":
         print("frissites: csak Windowson mérhető", flush=True)
         return 0
@@ -286,12 +365,18 @@ def frissites(
     telepitesi_mappa = exe.parent
     if exe.name.casefold() != "picasapy.exe":
         raise SystemExit("frissites: a futtatónak PicasaPy.exe útvonalra kell mutatnia")
-    uj_verzio = _kovetkezo_verzio(elvart_verzio)
-    archive = _keszits_frissitesi_zip(
-        telepitesi_mappa,
-        munka / "release" / "PicasaPy-windows-x64.zip",
-        uj_verzio,
-    )
+    # #6458: a tulajdonos útja: a KORÁBBI kiadás Setup-pal telepítve, a valódi
+    # GitHub-kiadásból frissít. Ilyenkor nincs helyi ál-szerver és saját zip.
+    if valodi_cel_verzio:
+        uj_verzio = valodi_cel_verzio
+        archive = None
+    else:
+        uj_verzio = _kovetkezo_verzio(elvart_verzio)
+        archive = _keszits_frissitesi_zip(
+            telepitesi_mappa,
+            munka / "release" / "PicasaPy-windows-x64.zip",
+            uj_verzio,
+        )
     kepernyokep_mappa = Path(kepernyokep_mappa or munka / "kepernyokepek").resolve()
     diag_mappa = munka / "diagnosztika"
     shutil.rmtree(diag_mappa, ignore_errors=True)
@@ -308,18 +393,30 @@ def frissites(
         konyvtar.mkdir(parents=True, exist_ok=True)
 
     folyamat = None
+    kozbeni = None
     try:
-        with _HelyiKiadasszerver(archive, uj_verzio) as szerver:
-            env["PICASAPY_UPDATE_API"] = szerver.api_url
+        szerver_kornyezet = (
+            contextlib.nullcontext(None) if archive is None
+            else _HelyiKiadasszerver(archive, uj_verzio)
+        )
+        with szerver_kornyezet as szerver:
+            if szerver is not None:
+                env["PICASAPY_UPDATE_API"] = szerver.api_url
+            # #6534: a saját buildünk úgy indul, ahogy az Intézőből vagy a
+            # parancsikonról: a munkamappa a telepítési mappa (ez fogta a cserét
+            # WinError 32-vel). A valódi kiadásokon futó út (archive nélkül) a
+            # már kiadott, javítás előtti segéddel indul; ott ez csak a javított
+            # kiadás után kapcsolható be, addig a régi hibát mérné újra.
             folyamat = subprocess.Popen(
                 [str(exe), str(konyvtar)],
                 env=env,
+                cwd=str(exe.parent) if archive is not None else None,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.STDOUT,
             )
             print(
                 f"[frissites] {elvart_verzio} -> {uj_verzio}; "
-                f"helyi API {szerver.api_url}; PID {folyamat.pid}",
+                f"API {szerver.api_url if szerver else 'valódi GitHub'}; PID {folyamat.pid}",
                 flush=True,
             )
             available, _ = _varjon_diagnosztikara(
@@ -425,6 +522,21 @@ def frissites(
             if folyamat.poll() is None:
                 _kilepes_diagnosztika(diag_mappa, folyamat.pid, kattintas, munka / "futas")
                 raise TimeoutError("a Frissítés most kattintás után a régi program nem lépett ki")
+            _varjon_frissitesi_ablakra(timeout=30.0)
+            _kepernyokep_mentese(
+                kepernyokep_mappa / "05b-frissites-folyamatban-ablak.png", 0
+            )
+            if kozben_inditas:
+                kozbeni = subprocess.Popen(
+                    [str(exe), str(konyvtar)],
+                    env=env,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.STDOUT,
+                )
+                print(
+                    f"  a régi program újraindítva a frissítés közben (PID {kozbeni.pid})",
+                    flush=True,
+                )
 
             try:
                 uj_pid_state, _ = _varjon_diagnosztikara(
@@ -513,6 +625,8 @@ def frissites(
         print(f"❌ frissites: {error}", flush=True)
         return 1
     finally:
+        if kozbeni is not None and kozbeni.poll() is None:
+            kozbeni.terminate()
         kezdo_pid = folyamat.pid if folyamat is not None else 0
         if folyamat is not None and folyamat.poll() is None:
             folyamat.terminate()

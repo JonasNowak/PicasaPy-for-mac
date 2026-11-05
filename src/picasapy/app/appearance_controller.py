@@ -48,11 +48,11 @@ def coerce_dark_flag(value) -> bool:
 
 
 def apply_qt_color_scheme(dark: bool) -> None:
-    """A Qt-alkalmazás színvilágának beállítása (világos vagy sötét téma).
+    """A Qt színvilágát a PicasaPy világos vagy sötét témájához igazítja.
 
-    Qt 6.5+-on a `setColorScheme` közvetlenül vezérli a macOS / Windows / Linux
-    ablakkeret és címsor megjelenését (macOS-en NSAppearanceDarkAqua,
-    Windowson DWMWA_USE_IMMERSIVE_DARK_MODE).
+    A Qt 6.8-ban bevezetett beállítás a platformnak is jelzi az alkalmazás
+    színvilágát, így az olyan natív elemek, mint az ablakkeret, követhetik a
+    PicasaPy témáját. Régebbi Qt-verzión vagy alkalmazás nélkül nincs teendő.
     """
     from PySide6.QtGui import QGuiApplication
 

@@ -21,9 +21,10 @@ Rectangle {
     // tartani (ott állítva, nem itt).
     implicitWidth: 280
 
-    // A panel a mért 277 px-es fülmagasságot használja; az aktív fültől
-    // független állandó méretet a #703/#3247 őrzi.
-    readonly property real mertTabPanelHeight: 277
+    // Az alapfülek megtartják a mért 277 px-et. A #6443 összevont
+    // effektfüle a 4,5 soros rács tényleges méretéhez növelheti a panelt.
+    readonly property real mertTabPanelHeight: panel.activeTab === 5
+        ? Math.max(277, panel.tabContentHeight) : 277
 
     // A fülek tartalma nélküli panelmagasságot a PhotoViewer alsó korlátként használja.
     readonly property real chromeHeight:
@@ -44,12 +45,18 @@ Rectangle {
 
     // #641: a Visszavonás/Újra sor alja a panelen belül.
     readonly property real undoRowBottom: globalUndoRow.y + globalUndoRow.height
+    readonly property real undoRowHeight: globalUndoRow.height
 
-    // 0–4: eredeti fülek; 5–6: saját fülek (#1187).
-    // SAJÁT FUNKCIÓ (#1187): a szerkesztő 7 fülből csak 5 (0-4. index) van meg
-    // az eredeti Picasában; az 5. (#422) és a 6. (#571) index a MI hozzáadásunk. A
-    // bináris-egyezés erre a két fülre NEM vonatkozik: hogy az eredetiben
-    // nincs ilyen fül, nem hiba. Lista: docs/decisions/vedett-sajat-funkciok.md
+    //: #6477: a panel aljából ennyit takar a fiók aljára dokkolt hisztogram;
+    //: a fül tartalma és a Visszavonás/Újra sor e fölött ér véget
+    property real bottomReserve: 0
+
+    // 0–4: eredeti fülek; 5: Glimmer és régi effektek összevont saját füle.
+    // SAJÁT FUNKCIÓ (#1187): a szerkesztő 6 fülből csak 5 (0-4. index) van meg
+    // az eredeti Picasában; az 5. index (#422 Glimmer és #571 régi effektek,
+    // #6443 óta egy fülön) a MI hozzáadásunk. A bináris-egyezés erre a fülre
+    // NEM vonatkozik: hogy az eredetiben nincs ilyen fül, nem hiba. Lista:
+    // docs/decisions/vedett-sajat-funkciok.md
     property int activeTab: 0
 
     property alias cropActive: toolsState.cropActive
@@ -182,6 +189,11 @@ Rectangle {
     signal effectRequested(string name)
 
     property alias paramPanelActive: effectState.paramPanelActive
+    // SAJÁT FUNKCIÓ (#6522): a térszelvény mélységtengely-csúszkája és a látható tartalom alja
+    property int effectSliceDepthIndex: 0
+    readonly property real effectSliceContentBottom: paramPanelActive && panelTabs.effectParamPanel
+        ? panelTabs.effectParamPanel.y + panelTabs.effectParamPanel.contentHeight
+        : panelTabs.tabAreaItem.y + Logika.fulTartalomAlja() + 8 + globalUndoRow.height
     property alias paramPanelSuspended: effectState.paramPanelSuspended
     readonly property bool paramPanelContentBlurred:
         effectState.paramPanelContentBlurred
@@ -321,7 +333,7 @@ Rectangle {
             ? editController : null
     }
 
-    // A fülsáv, a hét fül és a paraméterpanel önálló layout-komponensben él.
+    // A fülsáv, a hat fül és a paraméterpanel önálló layout-komponensben él.
     EditorPanelTabs {
         id: panelTabs
         panel: panel

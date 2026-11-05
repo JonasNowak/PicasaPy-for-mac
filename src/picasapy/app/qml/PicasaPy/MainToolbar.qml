@@ -26,7 +26,8 @@ Rectangle {
         later: qsTr("Later"),
         restart: qsTr("Restart now"),
         helperError: qsTr("Update helper could not start."),
-        installOnExit: qsTr("Install on exit"),
+        installOnExit: qsTr("Update on exit"),
+        updateScheduled: qsTr("Update will be installed when PicasaPy closes."),
         upToDate: qsTr("No newer version found."),
         integrityError: qsTr("SHA-256 check failed. Update not installed."),
         downloadError: qsTr("Update download failed.")
@@ -170,11 +171,12 @@ Rectangle {
     readonly property real searchContainerLeft: width * 0.4
     readonly property real searchContainerRight: width - 70
     // a látható mező (`searchbase`) jobb széle: a konténeren túl 23-mal
+    property real activityReserve: 47 // #6474: a háttérjelző igénye (szélesebb, ha megszakítható)
     readonly property real searchBoxRight: width - Math.max(
-        47,
+        activityReserve,
         updateAgent && updateAgent.updateAvailable !== undefined
             && updateAgent.updateAvailable && updateNoticeIsAllowed()
-            ? versionLabel.implicitWidth + 8 : 47)
+            ? versionLabel.implicitWidth + 28 : 47) // #6473: 10 belső + 4 köz + 14 margó
     Item {
         id: content
         anchors.fill: parent
@@ -661,66 +663,62 @@ Rectangle {
                 }
             }
         }
-        // Verzió a jobb felső sarokban. Frissítésnél ugyanitt kap kis
-        // kiemelt címkét; a keresőmező jobb széle csak a címke szélességével
-        // rövidül, a szomszédos eszköztár-vezérlők helye változatlan.
+        // Jobb felső verziójelzés; a keresőmező ennek szélességéhez igazodik.
         Text {
             id: versionLabel
             objectName: "versionLabel"
             visible: !toolbar.versionHidden
             anchors.right: content.right
-            anchors.rightMargin: 4
+            anchors.rightMargin: updateTagVisible ? 14 : 4
             anchors.verticalCenter: content.verticalCenter
             readonly property string fullText: appVersion
             readonly property bool updateTagVisible: toolbar.updateAgent
                 && toolbar.updateAgent.updateAvailable !== undefined
                 && toolbar.updateAgent.updateAvailable === true
                 && toolbar.updateNoticeIsAllowed()
+            readonly property bool installScheduled: toolbar.updateAgent
+                && toolbar.updateAgent.installScheduled === true
             readonly property string currentVersionText: String(appVersion).split(" ")[0]
-            // #6340/#6348: a mező mögötti ~41 px-be a teljes „vX.Y.Z elérhető”
-            // nem fér (félkövéren ~80 px), levágva pedig olvashatatlan. A
-            // címke ezért rövid jel — „↑1.0.11”, letöltés közben „↓ 45%” —, a
-            // teljes szöveg a buboréksúgóban és a kattintásra nyíló ablakban.
+            // #6340/#6348: a címke rövid jelet mutat; a teljes adat a súgóban
+            // és a kattintásra nyíló ablakban olvasható.
             readonly property bool downloadingVisible:
                 (toolbar.updateAgent && toolbar.updateAgent.downloadState !== undefined)
                 ? toolbar.updateNoticeIsAllowed() === true
                     && toolbar.updateAgent.downloadState === "downloading"
                 : false
-            text: downloadingVisible
+            text: installScheduled
+                ? "\u21bb" + toolbar.updateAgent.availableVersion
+                : downloadingVisible
                 ? "\u2193 " + toolbar.updateAgent.downloadProgress + "%"
                 : updateTagVisible
                 ? "\u2191" + toolbar.updateAgent.availableVersion
                 : currentVersionText
-            // #6348: a felirat SOHA nem lóghat a mezőre — a mező mögötti sáv
-            // a felső határ, ami nem fér ki, „…”-tal zárul (a teljes címke a
-            // buboréksúgóban marad). A 0.0.0+ismeretlen csomagverzió e
-            // korlát nélkül balra kifutott, rá a keresőmezőre.
+            // #6348: a mező mögötti szélességkorlát megakadályozza a keresőre
+            // lógást; a levágott verzió teljes szövege a súgóban marad.
             readonly property real maxWidth: Math.max(0,
                 toolbar.width - toolbar.searchBoxRight - anchors.rightMargin - 2)
             width: Math.min(implicitWidth, maxWidth)
             elide: Text.ElideRight
             font.pixelSize: 9
-            font.bold: updateTagVisible
-            // #706: rámutatásra és fókuszban aláhúzott — ránézésre is
-            // látszódjon, hogy a szám kattintható hivatkozás.
+            font.bold: updateTagVisible || installScheduled
+            // #706: aláhúzással jelzi, hogy a verzió hivatkozás.
             font.underline: versionHover.hovered || versionLabel.activeFocus
-            color: updateTagVisible ? Theme.canvasBg : Theme.textGray
-            opacity: updateTagVisible ? 1 : 0.6
+            color: updateTagVisible || installScheduled || downloadingVisible
+                ? Theme.panelSelectionText : Theme.textGray
+            opacity: updateTagVisible || installScheduled ? 1 : 0.6
             z: 2
             // billentyűzettel is elérhető (Tab), és Enterrel/szóközzel
             // aktiválható — ld. lent a Keys.onPressed ágat
             activeFocusOnTab: true
 
             // SAJÁT FUNKCIÓ (#706): a verziószám a GitHub-kiadásokra mutató hivatkozás.
-            // #706: a kiadások LISTÁJÁRA visz, nem a futó verzió saját
-            // kiadására: fejlesztői példánynál (még ki nem adott build)
-            // a `.../releases/tag/v<verzió>` 404-et adna.
+            // #706: a kiadások listájára visz, fejlesztői verzióból is.
             readonly property string releasesUrl:
                 "https://github.com/sanchomuzax/PicasaPy/releases/"
-            // maga a szám nem árulja el, hova visz — a súgó mondja ki.
-            // (Saját property, mert a csatolt `ToolTip.text` a Qt
-            // metaobjektumán át nem olvasható ki teszteléskor.)
-            readonly property string tooltipText: (versionLabel.downloadingVisible
+            // Külön property, hogy Qt-tesztből közvetlenül olvasható legyen.
+            readonly property string tooltipText: (versionLabel.installScheduled
+                    ? toolbar.updateStrings.updateScheduled + "\n"
+                    : versionLabel.downloadingVisible
                     ? toolbar.updateStrings.downloading + " "
                         + toolbar.updateAgent.downloadProgress + "%\n"
                     : versionLabel.updateTagVisible
@@ -776,11 +774,12 @@ Rectangle {
         Rectangle {
             objectName: "versionUpdateHighlight"
             anchors.centerIn: versionLabel
-            width: versionLabel.implicitWidth + 8
+            width: versionLabel.implicitWidth + 20
             height: 18
-            radius: 3
-            color: Theme.linkBlue
+            radius: 3 // a márkakézikönyv címkeformája (#6473)
+            color: Theme.brandbookBlue
             visible: versionLabel.updateTagVisible
+                     || versionLabel.installScheduled
                      || (toolbar.updateNoticeIsAllowed()
                          && toolbar.updateAgent
                          && ["downloading", "ready"].indexOf(

@@ -16,9 +16,9 @@ halasztott betöltő és a látható megerősítő párbeszéd együtt kerül a 
 Hasonlóan a földrajzi párbeszéd betöltője és látható `Dialog` egy állapot.
 
 PhotoViewer-állapotok (`alapnezet`, `bal-fiok-nyitva`, `filmcsik`,
-`szerkeszto-0`…`szerkeszto-6`, `arcreteg`, `teljes-kepernyo`): alapnézet
-(bal fiók csukva); bal fiók nyitva; filmszalag; szerkesztőpanel mind a hét füle (Gyakori javítások,
-Finomhangolás, Effektek, Kreatív, Művészi, További effektek, Régi effektek);
+`szerkeszto-0`…`szerkeszto-5`, `arcreteg`, `teljes-kepernyo`): alapnézet
+(bal fiók csukva); bal fiók nyitva; filmszalag; szerkesztőpanel mind a hat füle (Gyakori javítások,
+Finomhangolás, Effektek, Kreatív, Művészi, Régi effektek);
 arcréteg; teljes képernyő. Minden állapotot a
 `tests/app/qml_functional/conftest.py` közös `_build_qml_app` építője állít
 elő, azonos szintetikus fotókkal, rögzített mtime-mal és elszigetelt
@@ -81,7 +81,7 @@ PHOTO_VIEWER_ALLAPOT_NEVEK = (
     "alapnezet",
     "bal-fiok-nyitva",
     "filmcsik",
-    *(f"szerkeszto-{index}" for index in range(7)),
+    *(f"szerkeszto-{index}" for index in range(6)),
     "arcreteg",
     "teljes-kepernyo",
 )
@@ -93,7 +93,6 @@ _AKTIV_FUL_OBJEKTUMOK = (
     "editTabEffects2",
     "editTabEffects3",
     "editTabEffects4",
-    "editTabLegacy",
 )
 _KERET_SZIN = (255, 0, 255, 255)
 _STABIL_KOCKAK = 3
@@ -119,7 +118,7 @@ ALLAPOTOK = (
     Allapot("bal-fiok-nyitva", nyitott_fiok=True),
     Allapot("filmcsik", nyitott_fiok=False),
     *(Allapot(f"szerkeszto-{index}", nyitott_fiok=True, aktiv_ful=index)
-      for index in range(7)),
+      for index in range(6)),
     Allapot("arcreteg", nyitott_fiok=False, arc_reteg=True),
     Allapot("teljes-kepernyo", nyitott_fiok=False, teljes_kepernyo=True),
 )
@@ -142,6 +141,19 @@ def _var_feltetelre(alkalmazas: Any, feltetel, leiras: str, hatarido: float) -> 
             return
         time.sleep(0.02)
     raise RuntimeError(f"Időtúllépés: {leiras}.")
+
+
+def _var_modal_parbeszed_allapotara(
+    alkalmazas: Any, parbeszed: Any, *, nyitva: bool, allapot: str
+) -> None:
+    """A modális réteg csak a Popup-átmenet végén kerüljön a képkockába."""
+    _var_feltetelre(
+        alkalmazas,
+        lambda: bool(parbeszed.property("visible")) is nyitva
+        and bool(parbeszed.property("opened")) is nyitva,
+        f"a(z) {allapot} modális párbeszéd átmenetének befejeződése",
+        _ALLAPOT_HATARIDO_MP,
+    )
 
 
 def _var_stabil_ertekre(
@@ -737,11 +749,11 @@ def _foablak_allapotok(
         raise RuntimeError("A Minden szerkesztés visszavonása párbeszéd nem jött létre.")
     undo_dialog.openForLibrary([0])
     undo_dialog_obj = _elem(ablak, "undoAllEditsDialog")
-    _var_feltetelre(
+    _var_modal_parbeszed_allapotara(
         alkalmazas,
-        lambda: bool(undo_dialog_obj.property("visible")),
-        "a Minden szerkesztés visszavonása párbeszéd",
-        _ALLAPOT_HATARIDO_MP,
+        undo_dialog_obj,
+        nyitva=True,
+        allapot="a Minden szerkesztés visszavonása párbeszéd",
     )
     records.append(
         _allapot_mentese(
@@ -754,6 +766,12 @@ def _foablak_allapotok(
         )
     )
     undo_dialog.close()
+    _var_modal_parbeszed_allapotara(
+        alkalmazas,
+        undo_dialog_obj,
+        nyitva=False,
+        allapot="a Minden szerkesztés visszavonása párbeszéd bezárása",
+    )
 
     drop_loader = _elem(ablak, "dropGeotagDialogLoader")
     drop_dialog = drop_loader.ensure()
@@ -761,11 +779,16 @@ def _foablak_allapotok(
         raise RuntimeError("A földrajzi címkés behúzás párbeszéd nem jött létre.")
     drop_dialog.futtasd([0], 47.5, 19.0)
     drop_dialog_obj = _elem(ablak, "dropGeotagConfirm")
+    _var_modal_parbeszed_allapotara(
+        alkalmazas,
+        drop_dialog_obj,
+        nyitva=True,
+        allapot="a földrajzi címkés behúzás párbeszéd",
+    )
     _var_feltetelre(
         alkalmazas,
-        lambda: bool(drop_dialog_obj.property("visible"))
-        and bool(_elem(ablak, "dropGeotagMessage").property("text")),
-        "a földrajzi címkés behúzás párbeszéd",
+        lambda: bool(_elem(ablak, "dropGeotagMessage").property("text")),
+        "a földrajzi címkés behúzás párbeszéd üzenete",
         _ALLAPOT_HATARIDO_MP,
     )
     records.append(
@@ -780,6 +803,12 @@ def _foablak_allapotok(
         )
     )
     drop_dialog.close()
+    _var_modal_parbeszed_allapotara(
+        alkalmazas,
+        drop_dialog_obj,
+        nyitva=False,
+        allapot="a földrajzi címkés behúzás párbeszéd bezárása",
+    )
 
     split = _elem(ablak, "mainSplit")
     pane = _elem(ablak, "folderPane")

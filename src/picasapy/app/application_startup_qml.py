@@ -12,6 +12,7 @@ from .application_location import _qml_import_path, program_location
 from .color_palette import ColorPaletteProvider
 from .external_links import EXTERNAL_LINKS
 from .option_settings import initialize_option_settings
+from .notifier_screen_geometry import NotifierScreenGeometry
 
 def _startup_step_create_qml_engine(state):
     controller = state.controller
@@ -98,16 +99,33 @@ def _startup_step_register_qml_context(state):
     timeline_controller = state.timeline_controller
     _lathato_fotok = state._lathato_fotok
     web_export_controller = state.web_export_controller
+    notifier_screen_geometry = NotifierScreenGeometry(parent=app)
+
+    # SAJÁT FUNKCIÓ (#6522): a menü QSettings-állapotát és a háttérmérést egy vezérlő
+    # tartja, a képet a képszolgáltatója rajzolja.
+    from .effect_slice import EffectSliceController, EffectSliceImageProvider
+
+    effect_slice_controller = EffectSliceController(
+        edit_controller, settings=QSettings("PicasaPy", "PicasaPy"), parent=app
+    )
+    app.aboutToQuit.connect(effect_slice_controller.shutdown)
+    engine.addImageProvider("effectslice", EffectSliceImageProvider(effect_slice_controller))
 
     ScreenCaptureController = _app._lazy_app_symbol("ScreenCaptureController")
     screen_capture_controller = ScreenCaptureController(
         settings=QSettings("PicasaPy", "PicasaPy"), parent=app
     )
     app.aboutToQuit.connect(screen_capture_controller.shutdown)
+    # #6475: a mentett képernyőkép mappája a Projektek alatt is megjelenjen
+    screen_capture_controller.screenCaptureSaved.connect(controller.indexScreenCapture)
     engine.rootContext().setContextProperty("controller", controller)
+    engine.rootContext().setContextProperty(
+        "notifierScreenGeometry", notifier_screen_geometry
+    )
     engine.rootContext().setContextProperty("screenCaptureController", screen_capture_controller)
     engine.rootContext().setContextProperty("cameraCaptureController", camera_capture_controller)
     engine.rootContext().setContextProperty("editController", edit_controller)
+    engine.rootContext().setContextProperty("effectSliceController", effect_slice_controller)
     engine.rootContext().setContextProperty("secondPreview", second_preview)
     engine.rootContext().setContextProperty("fileOpsController", fileops_controller)
     engine.rootContext().setContextProperty("confirmSettings", confirm_settings)
@@ -213,6 +231,7 @@ def _startup_step_register_qml_context(state):
     progress_log.mark("QML-kontextus és vezérlők regisztrálva")
 
     state.screen_capture_controller = screen_capture_controller
+    state.notifier_screen_geometry = notifier_screen_geometry
     state.passport_controller = passport_controller
     state.compact_controller = compact_controller
     state.picasa_import_controller = picasa_import_controller

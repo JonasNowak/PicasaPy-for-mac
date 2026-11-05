@@ -7,6 +7,119 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 
 ## [Nem kiadott]
 
+## [1.0.47] - 2026-11-05
+
+- A filmkészítő előnézetének egyik belső tesztje elakadáskor bővebben írja ki, hol állt meg a képkészítés; a program működése nem változik (#6560).
+
+## [1.0.46] - 2026-11-05
+
+- Az előnézet-várakozás bukásakor a számlálók kiírása (#6560).
+## [1.0.45] - 2026-11-05
+
+- A frissítősegéd indításának belső tesztje már nem nyúl a Windows közös rendszerhívásaihoz; a program működése nem változik (#6557).
+
+## [1.0.44] - 2026-11-05
+
+- A képnézőben a szóköz állóképeknél is elindítja a diavetítést (#6531).
+
+## [1.0.43] - 2026-11-04
+
+- Megnyitott képnél is működik az F2: megnyitja az átnevezést a látott képre, ahogy az eredeti Picasában (#6530).
+- Az indulókép körül nincs többé lila keret: a kép széle nem átlátszó, mert a Windows a félig átlátszó szélt bíbor szegélyként rajzolta ki (#6533).
+- A Windowsos önfrissítés végigmegy: a frissítősegéd már nem a program mappájából fut, ezért nem fogja azt a mappát, amit le kell cserélnie (a "WinError 32" hiba és a percekig tartó "Fájlok cseréje" megszűnt). A mappát fogó maradék folyamatokat azonnal leállítja, és a frissítés közbeni rejtett indítások nem villantják fel az indulóképet (#6534).
+- Az Effekt-térszelvény szerkesztés közben a szerkesztőpanel minden fülén megjelenik: a Gyakori javításokon és az effektrácsos füleken is, konkrét effekt nélkül a fotó teljes láncát mutatva (#6535).
+- A Jó napom van után a Finomhangolás fülön az Effekt-térszelvény nem lapos lapot mutat, hanem a valódi tónusfelületet; effektváltáskor mindig az új effekthez illő nézet jön (#6536).
+
+## [1.0.42] - 2026-11-04
+
+- Új PicasaPy-funkció, az Effekt-térszelvény: a néző bal oldalán, a hisztogram fölött egy kis forgó 3D ábra mutatja, mit csinál a képpel a szerkesztett effekt vagy a fotó teljes szerkesztési lánca. A Nézet menüben állítható, mikor látszik: mindig, szerkesztés közben vagy soha (#6522).
+
+## [1.0.41] - 2026-11-04
+
+- Ha a menüből indított frissítés közben megérkezik az automatikus frissítésjelzés is, a letöltés már nem akad meg, és nem jelez idő előtt készet: a megkezdett frissítés zavartalanul végigmegy, az újraindítás után az új verzió indul (#6526).
+
+## [1.0.40] - 2026-11-04
+
+- Ha a frissítés után az új program nem indul el, a frissítési ablak fél percen belül jelzi, nem vár rá három percig (#6508).
+- Tétlenül sokkal kevesebb memóriát használ: a film-előnézet, az arcfelismerés és a kameraeszközök csak első használatkor töltődnek be (Linuxon mérve kb. 480 MB helyett kb. 280 MB) (#6510).
+
+## [1.0.39] - 2026-11-04
+
+- A frissítés újraindítása közben egy kis ablak mutatja, melyik lépésnél tart a frissítés, és mennyi idő telt el (#6508).
+- Tétlenül a PicasaPy már nem használja folyamatosan a processzort: egy rejtett gomb pulzáló animációja láthatatlanul is futott (#6510).
+- A PicasaPy indítóikonjában a kör és a színes jel pontosan akkora, mint az eredeti Picasa ikonjában, a 16 pixeles változat pedig világos, négyzetes csempe (#6514).
+
+## [1.0.38] - 2026-11-04
+
+- Sötét témában az ablak címsora és kerete sötét megjelenést kap, a Qt színvilága pedig követi a témát (#6511).
+
+## [1.0.37] - 2026-11-04
+
+- belső: A Windowsos QML-tesztek útvonalkezelése javult (#6505).
+
+## [1.0.36] - 2026-11-04
+
+- A régi effektek (például Lineáris homályosítás, Irányított telítettség) megkapták az eredeti csúszkáit és a képen húzható korongot, a beállítások megmaradnak (#6497).
+- Az indulóképen a PicasaPy-logó középre került (#6498).
+- A főablak alsó sávjában a gombok már nem érnek össze: a kimeneti gombok, a két forgatógomb és a négy panelkapcsoló között is rés van, a panelkapcsolók külön, lekerekített gombok, és a zöld feltöltés-gomb a többivel egy magasságú (#6499).
+
+## [1.0.35] - 2026-11-03
+
+- Az önfrissítési próba minden új kiadási Setup feltöltése után elindul, akkor is, ha közben új commit került a főágra (#6492).
+- A csomag indulásmérése az első hideg futás kiugrását 24 s-ig csak figyelmeztetésként jelzi, a meleg futások és a nagyon lassú első indulás továbbra is bukik (#6495).
+
+## [1.0.34] - 2026-11-03
+
+- A képernyőkép-felvevő megvárja a modális párbeszédek megnyitásának és bezárásának végét, így a felvételek tartalma ismételhető (#6489).
+
+## [1.0.33] - 2026-11-03
+
+- A windowsos telepítő ismét felkerül a kiadás mellé: az 1.0.32-ből a csomagolás egyik próbája miatt kimaradt, mert a próba nem a PicasaPy ablakára kattintott (#6487).
+
+## [1.0.32] - 2026-11-03
+
+- A windowsos telepítő végén bepipált „PicasaPy indítása” után a program néhány másodpercen belül indulóképet mutat, és a telepítés már előre betölti a programot, így az első indulás nem lassú (#6472).
+
+## [1.0.31] - 2026-11-03
+
+- A frissítési jelvény a márkakézikönyv kék címkeformáját kapta (fehér felirat, 3 px sarok), és a keresőmezőtől ugyanakkora a távolsága, mint az ablak jobb szélétől (#6473).
+- Szerkesztés közben az ép, épp szerkesztett képre már nem ugrik fel a „sérült fájlok elrejtése” ablak, ha egy előnézet egyszer nem készült el; a program újrapróbálja, és csak valóban olvashatatlan képnél kérdez (#6481).
+
+## [1.0.30] - 2026-11-03
+
+- Az önfrissítés nem bukik el, ha frissítés közben a régi programot újraindítják: a segéd kivárja, majd leállítja, foglalt fájlnál újrapróbál, és a munka idejére ablakban jelzi, hogy a frissítés fut; ha mégis visszaáll, a program a következő induláskor kiírja az okát (#6458).
+- A frissítési ablak „Telepítés kilépéskor” gombja „Frissítés kilépéskor” lett; megnyomása után a jobb felső verziójelző mutatja, hogy a frissítés a program bezárásakor települ, és ha a frissítés félbemarad vagy mégis a régi változat indul, a következő indulás kiírja (#6471).
+- A jobb felső háttérművelet-jelzőn a megszakító „×” a pörgő mellé került, nem takarja az animációt, és a keresőmező előtte véget ér (#6474).
+- A képernyőmentés (Print Screen) után a bal hasáb Projektek része alatt megjelenik a Képernyőfelvételek mappa a mentett képpel (#6475).
+- A könyvtár változás nélkül nem szinkronizál újra tíz másodpercenként, így a felület nem akad meg; a Súgó menü naplóátadása sem fagyasztja le a programot, ha a hálózati megosztás nem érhető el (#6476).
+- A szerkesztő Glimmer és régi effektek fülén kis ablakmagasságnál a csemperács a hisztogram fölött ér véget és görgethető, a Visszavonás/Újra sor sem kerül a hisztogram alá (#6477).
+
+## [1.0.29] - 2026-11-03
+
+- A Glimmer és a régi effektek egy fülre kerültek, négy és fél soros előnézeti ráccsal; a Színjavítás és a Fehérpont újra működik, a Homályosítás kattintható, a működésképtelen Fókuszpixelezés kikerült a rácsból (#6443).
+
+## [1.0.28] - 2026-11-03
+
+- Az arcfelismerés több kis, nehezen felismerhető arcot is megtalál, ha a második keresési menet megerősíti a találatot (#6439).
+
+## [1.0.27] - 2026-11-03
+
+- Az előfordítási tesztek külön tesztprofilba írják a QML-gyorsítótárat, a repó gyökerét pedig védik a futásidejű cache-től (#6455).
+
+## [1.0.26] - 2026-11-03
+
+- Az „Újraindítás most” a frissítősegédet a program mellől indítja, és ha ez nem megy, az ideiglenes mappából; ha egyik sem sikerül, a hibaüzenet megmondja az okát. A telepített program névjegyén nincs többé „(dev)” felirat (#6458).
+- A windowsos telepítőpróba a főablak 5 másodperces határát a három indítás középértékén méri, így a futtatógép lassú hideg indulása nem állítja meg a kiadást; egy indítás 8 másodperc fölött továbbra is piros (#6461).
+
+## [1.0.25] - 2026-11-02
+
+- Két képernyős gépen az értesítő a PicasaPy ablakának képernyőjén jelenik meg (#6435).
+
+## [1.0.24] - 2026-11-02
+
+- Az állapotsáv kiírja, min dolgozik a program; a Súgó menüből kapcsolható (#6440).
+- A jobb felső sarok belépve az eredetihez hasonlóan a fiók nevét, a Google Fotók és a Kijelentkezés hivatkozást mutatja (#6446).
+
 ## [1.0.23] - 2026-11-02
 
 - A windowsos QML-előfordítás összesítő sora nem vész el többé, és a gombnyomás képi próbája nem függ a platform alapstílusától (#6448).

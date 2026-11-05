@@ -22,10 +22,17 @@ a = Analysis(
     pathex=[str(GYOKER / "src")],
     binaries=[],
     datas=[],
-    hiddenimports=["picasapy.app.update_swap_helper"],
+    hiddenimports=[
+        "tkinter",
+        "tkinter.ttk",
+        "picasapy.app.update_swap_helper",
+        "picasapy.app.update_folyamatok",
+        "picasapy.app.update_eredmeny",
+        "picasapy.app.update_ablak",
+    ],
     hookspath=[],
     runtime_hooks=[],
-    excludes=["tkinter", "pytest"],
+    excludes=["pytest"],
     noarchive=False,
 )
 pyz = PYZ(a.pure)

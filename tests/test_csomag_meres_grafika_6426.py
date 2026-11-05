@@ -168,6 +168,7 @@ def test_a_meres_a_qml_es_a_grafikai_melegites_utan_indul_eloszor(
 
     monkeypatch.setattr(ido_modul, "_egy_inditas", inditas)
     monkeypatch.setattr(ido_modul, "hatar_hiba", lambda *_args: None)
+    monkeypatch.setattr(ido_modul, "foablak_kozepertek_hiba", lambda *_args: None)
     monkeypatch.setattr(ido_modul, "indulo_kozepertek_hiba", lambda *_args: None)
 
     assert (
@@ -368,4 +369,5 @@ def test_a_splash_keresese_nem_kuld_uzenetet_az_ablaknak():
     forras = inspect.getsource(windows_modul._splash_ablak)
     assert "SendMessage" not in forras
     assert "picasapy startup" in forras.casefold()
+    assert "tktoplevel" in forras.casefold(), "a bootloader indulóablaka is mérendő"
     assert "_ablakikonok" not in inspect.getsource(ido_modul._bevar)

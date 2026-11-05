@@ -57,9 +57,8 @@ def _startup_step_log_and_qt_setup(state):
     progress_log.install(early_error_log)
     progress_log.mark("Korai indulási hibanapló elérhető")
 
-    # A PicasaPy egyelőre MINDENHOL világos (a sötét téma V3-feature):
-    # Fusion stílus + explicit világos paletta; Linuxon/macOS-en a saját,
-    # világos QML-dialógusok a rendszer sötét mappaválasztója helyett.
+    # A PicasaPy felülete alapból világos, a sötét téma beállításból jön.
+    # Linuxon/macOS-en a saját QML-dialógusok a rendszer mappaválasztója helyett.
     # Windowson natív dialógus kell — ld. _force_qml_dialogs (#58).
     if _force_qml_dialogs():
         QGuiApplication.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeDialogs)

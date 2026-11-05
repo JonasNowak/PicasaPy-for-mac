@@ -176,7 +176,7 @@ class TestApplyQtColorScheme:
     def test_apply_qt_color_scheme_updates_style_hints(self, qt_app, monkeypatch):
         schemes = []
         monkeypatch.setattr(
-            qt_app.styleHints(), "setColorScheme", lambda s: schemes.append(s)
+            qt_app.styleHints(), "setColorScheme", lambda scheme: schemes.append(scheme)
         )
         apply_qt_color_scheme(True)
         assert schemes == [Qt.ColorScheme.Dark]
@@ -187,7 +187,6 @@ class TestApplyQtColorScheme:
         from PySide6.QtGui import QGuiApplication
 
         monkeypatch.setattr(QGuiApplication, "instance", staticmethod(lambda: None))
-        # Nem dobhat kivételt app hiányában sem
         apply_qt_color_scheme(True)
 
     def test_apply_qt_color_scheme_safe_when_attribute_error(self, qt_app, monkeypatch):
@@ -205,7 +204,7 @@ class TestApplyQtColorScheme:
 
         schemes = []
         monkeypatch.setattr(
-            qt_app.styleHints(), "setColorScheme", lambda s: schemes.append(s)
+            qt_app.styleHints(), "setColorScheme", lambda scheme: schemes.append(scheme)
         )
 
         class _Probe(AppearanceMixin, QObject):
@@ -219,7 +218,6 @@ class TestApplyQtColorScheme:
 
         settings = QSettings(str(tmp_path / "settings.ini"), QSettings.Format.IniFormat)
         probe = _Probe(settings)
-        # Az alapértelmezett világos inicializáláskor beállítja a Light sémát
         assert schemes == [Qt.ColorScheme.Light]
 
         probe.setDarkTheme(True)
@@ -237,7 +235,7 @@ class TestApplyQtColorScheme:
 
         schemes = []
         monkeypatch.setattr(
-            qt_app.styleHints(), "setColorScheme", lambda s: schemes.append(s)
+            qt_app.styleHints(), "setColorScheme", lambda scheme: schemes.append(scheme)
         )
 
         class _Probe(AppearanceMixin, QObject):
@@ -257,4 +255,53 @@ class TestApplyQtColorScheme:
         schemes.clear()
         second = QSettings(path, QSettings.Format.IniFormat)
         _Probe(second)
+        assert schemes == [Qt.ColorScheme.Dark]
+
+    def test_startup_restores_qt_scheme_from_dark_setting(
+        self, qt_app, tmp_path, monkeypatch
+    ):
+        from types import SimpleNamespace
+
+        from PySide6.QtGui import QIcon
+
+        from picasapy.app import application_startup_prepare as prepare
+
+        schemes = []
+        monkeypatch.setattr(
+            qt_app.styleHints(), "setColorScheme", lambda scheme: schemes.append(scheme)
+        )
+        monkeypatch.setattr(
+            prepare,
+            "QSettings",
+            lambda *_args: SimpleNamespace(value=lambda _key: "true"),
+        )
+        monkeypatch.setattr(prepare._app, "_data_dir", lambda: tmp_path)
+        monkeypatch.setattr(prepare, "runtime_version_messages", lambda *_args: ())
+        monkeypatch.setattr(prepare, "error_log_path", lambda _path: tmp_path / "log")
+        monkeypatch.setattr(prepare, "rotate_if_large", lambda _path: None)
+        monkeypatch.setattr(prepare, "_force_qml_dialogs", lambda: False)
+        monkeypatch.setattr(prepare, "allitsd_be_a_stilust", lambda: None)
+        monkeypatch.setattr(prepare, "_set_windows_app_id", lambda: None)
+        monkeypatch.setattr(prepare, "hianyzo_wayland_bovitmeny", lambda: None)
+        monkeypatch.setattr(prepare, "_window_icon_path", lambda: "")
+        monkeypatch.setattr(prepare, "_load_window_icon", lambda _path: QIcon())
+        monkeypatch.setattr(prepare, "_icon_report", lambda *_args: "ok")
+        monkeypatch.setattr(prepare, "_install_ui_font", lambda _app: None)
+        monkeypatch.setattr(prepare, "_install_translator", lambda _app: None)
+
+        class _Progress:
+            def install(self, _path):
+                pass
+
+            def mark(self, _message):
+                pass
+
+        state = SimpleNamespace(
+            argv=[],
+            progress_log=_Progress(),
+            timeline=_Progress(),
+            early_qt_app=False,
+        )
+        prepare._startup_step_log_and_qt_setup(state)
+
         assert schemes == [Qt.ColorScheme.Dark]

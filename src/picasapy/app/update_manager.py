@@ -29,6 +29,7 @@ from .update_checksums import SHA256SUMS_NAME, parse_sha256sums
 from .update_helper import (
     KILEPESI_HATARIDO_MP,
     inditsd_a_segedet,
+    utolso_inditasi_hiba,
     installation_kind,
     kenyszeritett_kilepes_ha_beragad,
     mappa_irhato,
@@ -61,6 +62,27 @@ DEFERRED_VERSION_KEY = "updates/deferredVersion"
 AUTO_CHECK_DELAY_MS = 30_000
 #: #6379: futás közben ennyi időnként keres újra (6 óra)
 AUTO_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000
+
+_UPDATE_HELPER_FELIRATOK = {
+    "varakozas": "Waiting for the previous version to exit",
+    "kicsomagolas": "Extracting update files",
+    "maradek_folyamatok": "Closing another running copy",
+    "csere": "Replacing application files",
+    "onellenorzes": "Checking the new version",
+    "qml_cache": "Preparing startup",
+    "qml_grafika": "Preparing graphics",
+    "inditas": "Starting the new version",
+    "ablak_varakozas": "Waiting for the new version window",
+    "elapsed": "Elapsed: {seconds} s",
+    "error_title": "The update failed",
+    "close": "Close",
+    "unexpected_error": "An unexpected error interrupted the update.",
+    "error_details": "Details: {details}",
+    "startup_check_failed": (
+        "The new version failed its startup check. The previous version will restart."
+    ),
+    "window_timeout": "The new version did not show a window within 180 seconds.",
+}
 
 
 #: a futtató folyamat (`executable`) — modulszintű fogantyú a tesztnek (#1375)
@@ -126,6 +148,24 @@ def _inditsd_a_segedet(args: list[str], *, emelt: bool) -> bool:
     return inditsd_a_segedet(args, emelt=emelt, platform=_platform())
 
 
+#: A `tempfile.gettempdir` modulszintű fogantyúja (#1375): a teszt EZT cserélje.
+_tempdir = tempfile.gettempdir
+
+
+def _seged_inditasi_helyek(install_dir: Path) -> list[Path]:
+    """#6458: ahonnan a frissítősegéd indulhat, a próbálás sorrendjében.
+
+    A testvérmappa ugyanabban a fában van, ahonnan maga a program is fut (ha
+    ott futhat program, ott a segéd is); a csere a telepítési mappát
+    átnevezi, ezért a segéd nem lehet annak a belsejében."""
+    return [install_dir.parent / "PicasaPy-update", Path(_tempdir())]
+
+
+def _masold_a_segedet(forras: Path, cel: Path) -> None:
+    cel.parent.mkdir(parents=True, exist_ok=True)
+    cel.write_bytes(forras.read_bytes())
+
+
 #: #6436: az „Újraindítás most” legfeljebb ennyit vár a háttérmunka végére;
 #: utána akkor is újraindul, ha a munka még fut (a tulajdonos gépén sosem ért véget)
 UJRAINDITAS_MAX_VARAKOZAS_MS = 4000
@@ -175,11 +215,27 @@ class UpdateController(QObject):
         self._progress = 0
         self._progress_total = 0
         self._download_path: Path | None = None
+        self._helper_error = ""
+        from . import update_eredmeny
+
+        #: #6458: ha az előző frissítés visszaállt, az okát egyszer kiírjuk
+        self._elozo_hiba = update_eredmeny.olvasd_es_torold(
+            update_eredmeny.jelzo_utvonal(), self._current_version
+        )
+        #: #6471: a „Frissítés kilépéskor” után a verziójelző ezt mutatja
+        self._install_scheduled = False
+        if self._elozo_hiba:
+            logger.warning("Az előző frissítés nem sikerült (#6458): %s", self._elozo_hiba)
         self._workers: dict[int, _Worker] = {}
         self._worker_callbacks: dict[
             int, tuple[Callable[[object], None], Callable[[str], None]]
         ] = {}
         self._next_job_id = 0
+        # #6526: a letöltés saját munkaszáma; a közben induló ellenőrzés nem
+        # veheti át a haladásjelzést
+        self._download_job_id = 0
+        # #6526: futó automatikus ellenőrzés alatt kért kézi ellenőrzés is választ kap
+        self._pending_manual = False
         self._automatic_check_started = False
         self._download_requested = False
         self._periodic_check_timer = QTimer(self)
@@ -255,6 +311,27 @@ class UpdateController(QObject):
             return 0
         return min(100, round(self._progress * 100 / self._progress_total))
 
+    installScheduledChanged = Signal()
+
+    @Property(bool, notify=installScheduledChanged)
+    def installScheduled(self) -> bool:  # noqa: N802
+        """#6471: a frissítés a program bezárásakor települ."""
+        return self._install_scheduled
+
+    @Property(str, constant=True)
+    def previousUpdateFailure(self) -> str:  # noqa: N802
+        """#6458: az előző, visszaállt frissítés okkódja (üres, ha nem volt ilyen)."""
+        return self._elozo_hiba
+
+    @Property(str, notify=progressChanged)
+    def helperErrorDetail(self) -> str:  # noqa: N802
+        """#6458: miért nem indult el a frissítősegéd (üres, ha nincs hiba)."""
+        return self._helper_error
+
+    def _set_helper_error(self, szoveg: str) -> None:
+        self._helper_error = szoveg
+        self.progressChanged.emit()
+
     @Property(str, notify=progressChanged)
     def downloadState(self) -> str:  # noqa: N802
         if self._download_path is not None:
@@ -273,7 +350,7 @@ class UpdateController(QObject):
         action: Callable[[Callable[[int, int], None]], object],
         done: Callable[[object], None],
         failed: Callable[[str], None],
-    ) -> None:
+    ) -> int:
         self._next_job_id += 1
         job_id = self._next_job_id
         worker = _Worker(job_id, action)
@@ -284,6 +361,7 @@ class UpdateController(QObject):
         worker_signals.failed.connect(self._on_worker_failed)
         worker_signals.progress.connect(self._on_worker_progress)
         self._pool.start(worker)
+        return job_id
 
     @Slot(int, object)
     def _on_worker_finished(self, job_id: int, value: object) -> None:
@@ -301,7 +379,7 @@ class UpdateController(QObject):
 
     @Slot(int, int, int)
     def _on_worker_progress(self, job_id: int, received: int, total: int) -> None:
-        if job_id != self._next_job_id:
+        if job_id != self._download_job_id:
             return
         self._progress, self._progress_total = received, total
         self.progressChanged.emit()
@@ -438,43 +516,69 @@ class UpdateController(QObject):
         """Kézi ellenőrzés, a napi automatikus korláttól függetlenül."""
         self._check_latest(manual=True)
 
+    def _frissites_folyamatban(self) -> bool:
+        """#6526: elindított letöltés, kész csomag vagy kilépéskori telepítés."""
+        return (
+            self._download_requested
+            or self._download_path is not None
+            or self._install_scheduled
+        )
+
     def _check_latest(self, *, manual: bool) -> None:
         if self._checking:
+            # #6526: a futó ellenőrzés eredménye a kézi kérésre is válasz
+            self._pending_manual = self._pending_manual or manual
             return
         self._checking = True
         self.checkingChanged.emit()
 
         def completed(value: object) -> None:
+            manual_any = manual or self._pending_manual
+            self._pending_manual = False
             self._checking = False
             self.checkingChanged.emit()
-            release = value if isinstance(value, ReleaseInfo) else None
-            is_newer = bool(release and release_is_newer(release.version, self._current_version))
-            if is_newer and release:
-                self._release = release
-                self.updateAvailableChanged.emit()
-                if manual:
+            if self._frissites_folyamatban():
+                # #6526: az elindított frissítés kiadását semmilyen későbbi
+                # ellenőrzés nem cseréli le és nem törli, jelzést sem küld
+                if manual_any:
                     self.manualCheckFinished.emit(True, "available")
-                else:
-                    notified = str(self._settings.value(NOTIFIED_VERSION_KEY, "") or "")
-                    if notified != release.version:
-                        self._settings.setValue(NOTIFIED_VERSION_KEY, release.version)
-                        self._settings.sync()
-                        self.notificationRequested.emit()
-            else:
-                if self._release is not None:
-                    self._release = None
-                    self.updateAvailableChanged.emit()
-                if manual:
-                    self.manualCheckFinished.emit(False, "up-to-date")
+                return
+            self._report_release(value, manual=manual_any)
 
         def failed(message: str) -> None:
+            manual_any = manual or self._pending_manual
+            self._pending_manual = False
             logger.debug("Frissítésellenőrzés nem sikerült: %s", message)
             self._checking = False
             self.checkingChanged.emit()
-            if manual:
+            if manual_any and self._frissites_folyamatban():
+                self.manualCheckFinished.emit(True, "available")
+            elif manual_any:
                 self.manualCheckFinished.emit(False, "error")
 
         self._submit(lambda _progress: self._letoltheto_kiadas(), completed, failed)
+
+    def _report_release(self, value: object, *, manual: bool) -> None:
+        """Az ellenőrzés eredményének közzététele, ha nincs folyamatban frissítés."""
+        release = value if isinstance(value, ReleaseInfo) else None
+        is_newer = bool(release and release_is_newer(release.version, self._current_version))
+        if is_newer and release:
+            self._release = release
+            self.updateAvailableChanged.emit()
+            if manual:
+                self.manualCheckFinished.emit(True, "available")
+            else:
+                notified = str(self._settings.value(NOTIFIED_VERSION_KEY, "") or "")
+                if notified != release.version:
+                    self._settings.setValue(NOTIFIED_VERSION_KEY, release.version)
+                    self._settings.sync()
+                    self.notificationRequested.emit()
+        else:
+            if self._release is not None:
+                self._release = None
+                self.updateAvailableChanged.emit()
+            if manual:
+                self.manualCheckFinished.emit(False, "up-to-date")
 
     def _letoltheto_kiadas(self) -> ReleaseInfo | None:
         """A legújabb kiadás, de windowsos telepítésnél csak ha letölthető.
@@ -513,6 +617,9 @@ class UpdateController(QObject):
         if archive is None or manifest is None:
             self.downloadFinished.emit(False, "missing-assets")
             return
+        if self._download_requested or self._download_path is not None:
+            # #6526: a futó vagy kész letöltést egy második kérés nem kezdi újra
+            return
         self._progress = self._progress_total = 0
         self._download_path = None
         self._download_requested = True
@@ -548,7 +655,7 @@ class UpdateController(QObject):
             self.progressChanged.emit()
             self.downloadFinished.emit(False, "integrity-error" if "SHA-256" in message else "download-error")
 
-        self._submit(download, complete, failed)
+        self._download_job_id = self._submit(download, complete, failed)
 
     @Slot(bool, result=bool)
     def installWhenExiting(self, restart_now: bool = False) -> bool:  # noqa: N802
@@ -592,29 +699,63 @@ class UpdateController(QObject):
         self._start_helper(True)
 
     def _start_helper(self, restart_now: bool) -> bool:
-        helper = Path(_futtato.executable).resolve().with_name("PicasaPyUpdateHelper.exe")
+        exe = Path(_futtato.executable).resolve()
+        helper = exe.with_name("PicasaPyUpdateHelper.exe")
         if not helper.is_file():
+            self._set_helper_error(f"hiányzik: {helper.name}")
             self.downloadFinished.emit(False, "missing-helper")
             return False
-        copied = Path(tempfile.gettempdir()) / f"PicasaPyUpdateHelper-{os.getpid()}.exe"
-        copied.write_bytes(helper.read_bytes())
-        install_dir = Path(_futtato.executable).resolve().parent
-        args = [
-            str(copied),
-            "--pid",
-            str(os.getpid()),
-            "--archive",
-            str(self._download_path),
-            "--install-dir",
-            str(install_dir),
-            "--executable",
-            Path(_futtato.executable).name,
-        ]
+        install_dir = exe.parent
         emelt = not mappa_irhato(install_dir.parent)
-        if emelt:
-            args.append("--uac-emelt")
-        if not _inditsd_a_segedet(args, emelt=emelt):
+        hibak: list[str] = []
+        from . import update_eredmeny
+
+        # #6471: ha a segéd el sem jut a végéig, a következő indulás ebből tudja meg
+        jelzo = update_eredmeny.jelzo_utvonal()
+        update_eredmeny.ird_varakozik(jelzo, self.availableVersion)
+        # #6458: előbb a program mellől (a telepítési mappa testvérmappájából),
+        # mert céges gépen a %TEMP%-ből induló programok gyakran tiltottak
+        for mappa in _seged_inditasi_helyek(install_dir):
+            cel = mappa / f"PicasaPyUpdateHelper-{os.getpid()}.exe"
+            try:
+                _masold_a_segedet(helper, cel)
+            except OSError as hiba:
+                hibak.append(f"{mappa}: {hiba}")
+                continue
+            args = [
+                str(cel),
+                "--pid",
+                str(os.getpid()),
+                "--archive",
+                str(self._download_path),
+                "--install-dir",
+                str(install_dir),
+                "--executable",
+                exe.name,
+                "--ui-strings",
+                json.dumps(
+                    {
+                        key: self.tr(source)
+                        for key, source in _UPDATE_HELPER_FELIRATOK.items()
+                    },
+                    ensure_ascii=False,
+                ),
+            ]
+            if emelt:
+                args.append("--uac-emelt")
+            if _inditsd_a_segedet(args, emelt=emelt):
+                self._set_helper_error("")
+                break
+            hibak.append(f"{mappa}: az indítás nem sikerült ({utolso_inditasi_hiba()})")
+        else:
+            update_eredmeny.torold(jelzo)
+            self._set_helper_error("; ".join(hibak) or "ismeretlen ok")
+            logger.warning("A frissítősegéd nem indult el: %s", self._helper_error)
+            self.downloadFinished.emit(False, "helper-start-failed")
             return False
+        if not restart_now:
+            self._install_scheduled = True
+            self.installScheduledChanged.emit()
         if restart_now:
             from PySide6.QtCore import QCoreApplication
 

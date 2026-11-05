@@ -202,9 +202,9 @@ Jelölés a „3.9-ben él?" oszlopban:
 | 39 | Full Screen Mode | `F11` | ⬜ | nincs menütétel-párja (a teljes képernyő a nézőben és a diavetítésben él) |
 | 40 | Select 1st Picture in Album | `Home` | ✅ | a rács `Home`-kezelője, `0x0076a390` → `0x00718880` (ld. `picasa-eger-es-kijeloles.md` 12.) |
 | 41 | Select Last Picture in Album | `End` | ✅ | `0x0076a400` → `0x00718930` (ugyanott) |
-| 42 | Pause/Play Movie | `/` | ⬜ | a videólejátszás billentyűzete nincs feltárva (ld. 7.) |
-| 43 | Rewind Movie | `,` | ⬜ | ugyanaz |
-| 44 | Fast Forward Movie | `.` | ⬜ | ugyanaz |
+| 42 | Pause/Play Movie | `/` | ⬜ | a `SHORTCUTS.XML`-beli billentyű és a fogadó közötti út **NINCS MEG**; a külön MovieMaker `video_control_bar2`-kezelő nem köthető ehhez a billentyűhöz (§12; `picasa-create-features.md` §2.7/c) |
+| 43 | Rewind Movie | `,` | ⬜ | ugyanaz; a fizikai billentyű→fogadó út **NINCS MEG** (§12) |
+| 44 | Fast Forward Movie | `.` | ⬜ | ugyanaz; a fizikai billentyű→fogadó út **NINCS MEG** (§12) |
 | 45 | Next Picture | ➖ | ✅ | a rekesz üres, de a funkció él: jobbra nyíl (`0x00717eb0`) |
 | 46 | Previous Picture | ➖ | ✅ | balra nyíl, ugyanaz a mag |
 | 47 | Switch Between Automatic and Manual Modes | ➖ | ⬜ | nem azonosított |
@@ -597,7 +597,7 @@ A #4398 elején megadott 53-as szám a #4339 korábbi pillanatfelvétele volt; a
 | 24 | `Main.qml` — címkékpanel | `Ctrl+T` | Könyvtárnézet; `viewerOpen == false`, nincs fókuszban szövegmező. |
 | 25 | `Main.qml` — tulajdonságpanel | `Alt+Return` | Könyvtárnézet; `viewerOpen == false`, nincs fókuszban szövegmező. |
 | 26 | `Main.qml`: Időrend-bemutató | `Ctrl+5` | Aktív, ha a néző és a diavetítés nem nyitott; kijelölés nélkül is megnyitja a teljes képernyős bemutatót (#5377). |
-| 27 | `Main.qml` — átnevezés | `F2` | Könyvtárnézet; `viewerOpen == false`, nincs fókuszban szövegmező. A kijelölés kezelőfeltétel, nem külön `Shortcut`-kapu. |
+| 27 | `MainKeyboardShortcuts.qml` - átnevezés | `F2` | Könyvtárnézet és néző (#6530: a menüsáv `0xd6da28` rekordja a nézőben is él); nincs fókuszban szövegmező, nem fut diavetítés. A nézőben a látott képet nevezi át. |
 | 28 | `Main.qml` — exportálás mappába | `Ctrl+Shift+S` | Könyvtárnézet; `viewerOpen == false`, nincs fókuszban szövegmező. |
 | 29 | `Main.qml` — `shortcutDeleteFromDiskGrid` | `Ctrl+Delete` | Könyvtárnézet; `viewerOpen == false`, nincs szövegfókusz és van kijelölt sor. |
 | 30 | `Main.qml` — `shortcutDeleteFromDiskViewer` | `Ctrl+Delete` | Néző; `viewerOpen == true`, nincs szövegfókusz és van aktuális kép. |
@@ -628,7 +628,7 @@ A #4398 elején megadott 53-as szám a #4339 korábbi pillanatfelvétele volt; a
 
 A főablak kötéseinél a táblázat a forrásban kifejezett `enabled`-kaput írja le; ahol nincs nézetkapu, ott nem következtetünk a 44 eredeti helyi rekord parancs-hozzárendelésére. Az eredetihez nem igazolt `+0x332f` módjelző szemantikája továbbra is nyitott. `PhotoViewer.qml` nézeti `Keys`-fogadói (`Esc`, nyilak, `Return`, szóköz, `F`, `Shift+F`, `Ctrl+Delete`) szövegfókuszban visszatérnek a mezőnek, `PicasaSlider.qml` pedig csak a `EditorParamPanel.qml` 3–5. látható füléhez kapja meg a `+`, `=`, `-`, `_` léptetés engedélyét.
 
-Az ellenőrző teszt valódi billentyűleütéssel próbálja mind az 54 deklaráció szekvenciáját keresőmező-fókuszban; külön valódi eseményekkel vizsgálja a könyvtári `Ctrl+1` editorbeli tiltását, az editor 2. fülén a négy sliderbillentyű tiltását és a 3. fülön működését, továbbá a kereső-, felirat- és címkemező saját szerkesztőbillentyűit. Ez nem bizonyítja a 44 rekord egyedi parancs-megfeleltetését.
+Az ellenőrző teszt jelenlegi futáskor 62 QML `Shortcut`-deklaráció szekvenciáját próbálta valódi leütéssel keresőmező-fókuszban; külön valódi eseményekkel vizsgálja a könyvtári `Ctrl+1` editorbeli tiltását, az editor 2. fülén a négy sliderbillentyű tiltását és a 3. fülön működését, továbbá a kereső-, felirat- és címkemező saját szerkesztőbillentyűit. Ez nem bizonyítja a 44 rekord egyedi parancs-megfeleltetését.
 ---
 
 ## 7. Amit ez a kör NEM vizsgált (kimondva)
@@ -646,10 +646,15 @@ Az ellenőrző teszt valódi billentyűleütéssel próbálja mind az 54 deklar�
    `/`, `,`, `.`, 47.) — ezekhez **nem találtunk** menü- vagy
    helyimenü-kötést. Nem állítjuk, hogy nem működnek: azt állítjuk,
    hogy a **három feltárt forrásban nincsenek**.
-3. **A videólejátszó billentyűzete** (`/`, `,`, `.`) — a
-   `video_control_bar2/*` felület nincs feltárva.
-4. **A szerkesztőpanel saját billentyűi** (`F8`/`F9` említések a
-   `ui-audit-editor.md`-ben) — más lap hatóköre.
+3. **A videólejátszó billentyűzete** (`/`, `,`, `.`) - a fizikai
+   billentyűk és a néző videólejátszójának műveletei közötti út továbbra
+   nyitott. A MovieMaker külön `video_control_bar2` előnézetének belső
+   műveletkódjai dokumentáltak a `picasa-create-features.md` §2.7/c-ben;
+   nem bizonyított, hogy a keymap-billentyűk ehhez jutnak.
+4. **A szerkesztőpanel saját billentyűi** (`F8`/`F9`): a
+   `0x00760970` egyképes szerkesztő-ágát és a helyi PicasaPy-billentyűforrást
+   ez a kör részlegesen ellenőrizte (§12). A módosító nélküli F8/F9 teljes
+   eredeti fókusz-/nézetútja és futásbeli hatása nyitott.
 5. **A párbeszédek `Esc`-kezelése** — a `picasa-eger-es-kijeloles.md`
    8. szakasza (`escapekey 1`, 11 gomb) már leírja.
 6. **Mac-változat** (`eMenuFileMac::*`, `eMenuPictureMac::*`) — a
@@ -1086,7 +1091,14 @@ A `0x005e6814` `jg`-je alatt, `WM_KEYDOWN`-ra (`cmp [ebx+4], 0x100`,
 frissítési út a 10.22-ben szerepel; a többi hívott függvény felhasználói
 jelentése nincs mérve — csak a címük, az őreik és az elemnevek.
 
-### 10.11 ⛔ NEGATÍV EREDMÉNY: nincs MÁSIK ilyen kezelő (#2164)
+### 10.11 ⛔ KORLÁTOZOTT NEGATÍV EREDMÉNY: nincs másik VK-indexelt Ctrl-switch (#2164)
+
+> ⚠️ **Hatókör-helyesbítés (2026-11-04; lásd §12):** a korábbi pásztázás
+> a `word ptr [reg+8]`-ból olvasott VK-láncokat fedte le. Kimaradt belőle a
+> byte-os `MSG+8`-olvasású `0x00760970` szerkesztő-egyképes kezelő és a
+> `OneUpUI → QDrawable` út (`0x00802e10` → `0x00801270`). A „nincs másik
+> kezelő” állítás ezért általánosan nem tartható; a 0x005e6710 a fő
+> CThumbUI-lánc, de nem az egyetlen nézethez kötött billentyűút.
 
 A #2164 azt kérdezte, hol van a **szerkesztő**, a **diavetítés** és a
 **videólejátszó** billentyűkezelője. Három, egymástól független mérés:
@@ -1227,8 +1239,11 @@ végigpásztáztam, és megtartottam azokat, amelyeket **legalább két**
 | `0x00aa4e18` | `0x00aa4dd0` | `Home`,`End`,`Delete`,`→` | listavezérlő (`listboxup`, `listboxdown`, …) |
 | `0x00ae137c`, `0x00b41267`, `0x00c1609c`, `0x00c160d1` | — | nem billentyű-jellegű | kizárva |
 
-⇒ **A diavetítésnek és a videólejátszónak NINCS saját VK-lánca.** Ez a
-negyedik, egymástól független kizárás a 10.11 három mérése után.
+⇒ **A korábbi pásztázás 20, szó szélességű `[reg+8]` VK-láncában nem volt
+diavetítés-/videókezelő.** Ez az eredmény a vizsgált mintára korlátozott:
+nem fedi a byte-os `MSG+8` olvasót. A `0x00801270` OneUp/QDrawable útját a
+§12 azonosítja, ezért ebből a pásztázásból nem következik, hogy a
+diavetítésnek vagy videónak nincs saját kezelője.
 
 ### 10.17 Ami a diavetítésről/videóról ekkor még nem volt tudható
 
@@ -1266,11 +1281,20 @@ Ezen felül `WM_CHAR`-ra a **Tab** (`0x00a53b44`) külön ágon megy
 `WM_KEYUP`-ot (`cmp eax, 0x101`, `0x00a58322`), és a **fókuszban lévő
 elemnek** küldi el.
 
-### 10.19 ⛔ EZ A VÁLASZ a #2164-re: a diavetítésnek/videónak NINCS saját kezelője
+### 10.19 ⚠️ HELYESBÍTÉS: a korábbi „nincs saját kezelő” következtetés megdőlt
 
-A navigációs billentyűk **nem nézetenként** vannak lekezelve, hanem
-**eseményként a fókuszált elemnek** továbbítva. Ezért nem találtunk
-diavetítés- vagy videó-specifikus billentyűkezelőt: **nincs is.**
+> ⚠️ **A következtetés az alábbi mérésekhez képest megdőlt (2026-11-04; lásd §12).**
+> A `0x00801270` a `QDrawable::vftable +0x30` billentyűkezelője, és a
+> `OneUpUI` eseménytovábbító thunkján (`0x00802e10`) át elérhető. Ez a
+> OneUp/diavetítés út legalább az Esc, nyilak, Space, számjegyek és F/B/O
+> billentyűket lekezeli. A `/`, `,`, `.` videóleképezés továbbra is nyitott;
+> a régi VK-keresésből annak hiánya nem következik.
+
+Az alábbiak a 2026-09-03-i kutatókör eredményei és határai; a korábbi
+általános következtetést a 2026-11-04-i disassembly cáfolja. A
+navigációs billentyűk egy része eseményként a fókuszált elemhez jut, de a
+OneUp/diavetítés külön `QDrawable`-kezelőjét a §12 azonosítja. A videó
+`/`, `,`, `.` útja továbbra sincs feltárva.
 
 **Öt egymástól független mérés vezetett ide:**
 
@@ -1279,7 +1303,9 @@ diavetítés- vagy videó-specifikus billentyűkezelőt: **nincs is.**
 2. a teljes `.text` **174** ugrótáblás `switch`-éből **egyetlen** indexel a
    VK-ból (`0x005e61f1`);
 3. `cmp ax, 0xBC` / `0xBE` / `0xBF` (`,` `.` `/`): **nulla** előfordulás;
-4. a **húsz** VK-összehasonlító lánc (10.16) egyike sem a diavetítésé;
+4. a **húsz szó-szélességű VK-összehasonlító lánc** (10.16) egyike sem
+   azonosult diavetítés-kezelőként; a byte-os `MSG+8` ágakat ez a mérés
+   nem fedte le (lásd §12);
 5. **⛔ a `Space`-nyom HAMIS volt** — ld. lent.
 
 ### 10.20 ⛔ HELYESBÍTÉS: a nyolc `cmp ax, 0x20` NEM a Space billentyű
@@ -2102,7 +2128,7 @@ Az állapot mező értékei:
 | 23 | Ctrl+4 | Diavetítés | sequence=Ctrl+4 → diavetítés indítása | **megvan és működik** | Főablak; szövegfókusz nélkül | tests/app/test_qml_slideshow.py |
 | 24 | Ctrl+5 | Időrend | sequence=Ctrl+5 → a TimelineView teljes képernyős bemutatója | **megvan és működik (#5377)** | A néző és diavetítés bezárva; kijelölés nem kell | `tests/app/qml_functional/test_idorend_bemutato_5377.py` |
 | 25 | Ctrl+Shift+P | Indexképek nyomtatása | objectName=shortcutPrintContactSheet → indexkép-nyomtatás | **megvan és működik** | A Mappa-menütétellel azonosan mindig aktív; kijelöléstől és szövegfókusztól független | tests/app/qml_functional/test_indexkep_nyomtatas_1590.py |
-| 26 | Ctrl+W | A keymap-komment szerint weboldal export; a mért menüsávban nincs ilyen billentyű | sequence=Ctrl+W → csak projektlap bezárása | **nem cél — a 10.7 szerint az eredeti dispatchben sincs Ctrl+W ág; a projektlap parancsa PicasaPy-funkció** | Csak nyitott projektlapnál; szövegfókusz nélkül | tests/app/qml_functional/test_projektlap_billentyuk_2170.py |
+| 26 | Ctrl+W | A keymap-komment szerint weboldal export; a mért menüsávban nincs ilyen billentyű. Az eredeti CThumbUI lánc projektlap-sávja ugyanakkor `Ctrl+W`-re bezár (`0x005b2390`, §10.15). | sequence=Ctrl+W → csak projektlap bezárása | **nem cél a weboldal-exportrekeszre** - a projektlap-bezárás más eredeti művelet és aktív projektlaphoz kötött | Csak nyitott projektlapnál; szövegfókusz nélkül | tests/app/qml_functional/test_projektlap_billentyuk_2170.py |
 | 27 | Ctrl+R | Forgatás jobbra | sequence=Ctrl+R → aktuális kijelölés vagy nézőkép forgatása | **megvan és működik** | Főablak; szövegfókusz nélkül | tests/app/qml_functional/test_photo_menu_commands.py |
 | 28 | Ctrl+Shift+R | Forgatás balra | sequence=Ctrl+Shift+R → aktuális kijelölés vagy nézőkép forgatása | **megvan és működik** | Főablak; szövegfókusz nélkül | tests/app/qml_functional/test_photo_menu_commands.py |
 | 29 | Alt+Enter | Tulajdonságok | sequence=Alt+Return → Tulajdonságok panel | **megvan és működik** | Könyvtárnézet; érvényes fotóművelet; szövegfókusz nélkül | tests/app/qml_functional/test_shortcut_focus_4398.py |
@@ -2126,4 +2152,155 @@ Az állapot mező értékei:
 | 47 | ➖ (nincs billentyű) | Automatikus/kézi mód váltása | Nincs azonosított eredeti parancs vagy mai kötés | **tisztázandó — a forrás nem azonosítja a rekesz műveletét** | Nincs megállapítható kapu; nem találgatunk | tests/app/test_paritas_gyorsbillentyu_helyi_menuk_4462.py |
 | 48 | ➖ (nincs billentyű) | Visszatérés a könyvtárnézetbe; a C forrás Esc-kötése | Keys=Keys.onEscapePressed → viewerMenuBackToLibrary út | **megvan és működik** | Néző; aktív szerkesztőművelet előbb megszakad; szövegfókuszban nem zár | tests/app/qml_functional/test_viewer_escape_key_4462.py, tests/app/qml_functional/test_viewer_escape_666.py |
 
-A 22., 26. és 37. sor a keymap-komment/rekesz eltérését rögzíti, nem hibás mai működést. A 39. sor önálló hiány; a 42–44. és 47. sor tisztázandó marad. A #4398 valós QTest.keyClick próbája mind az 54 QML Shortcutot keresőmező-fókusszal ellenőrzi, a paritásőr pedig a 48 eredeti keymap-rekeszt és a QML-horgonyokat tartja számon. A konkrét műveletpróbákat a sorokban hivatkozott meglévő tesztek végzik.
+A 22., 26. és 37. sor a keymap-komment/rekesz eltérését rögzíti, nem hibás mai működést. A 39. sor önálló hiány; a 42-44. sorhoz a fizikai billentyű→néző videókezelő út továbbra is **NINCS MEG** (§12), a 47. sor tisztázandó. A #4398 valódi `QTest.keyClick` próbája a jelenlegi futáskor 62 QML `Shortcut`-szekvenciát ellenőriz keresőmező-fókusszal; ez fókuszkapu, nem a 62 művelet egyedi igazolása. A paritásőr a 48 eredeti keymap-rekeszt és a QML-horgonyokat tartja számon. A konkrét műveletpróbák állapotát a §12.4 sorolja.
+
+## 12. #6531 - nézetenkénti billentyű → művelet útvonalak (2026-11-04)
+
+Ez a szakasz a binárisból feltárt **nem menüs** billentyűutak keresztmetszeti
+táblája. A menü- és helyimenü-kötések teljes forrástáblái továbbra is a
+§2.5-ben, §3.3-ban és §4.1-ben vannak; a könyvtárnézet 34 Ctrl-ágának
+soronkénti címei a §10.3-ban, a fő F-billentyűké a §10.10-ben, a projektlap
+és a csúszka útja a §10.14-10.15-ben. A táblázat az ottani listákat
+kereshető, nézet szerinti indexszé egészíti ki; nem következtet futásidejű
+látható hatásra ott, ahol csak belső ág ismert.
+
+| billentyű | nézet / kapu | parancs vagy kódút | bináris cím | bizonyítottság |
+|---|---|---|---|---|
+| `Ctrl+Enter` | CThumbUI / könyvtár-főnézet; közös eseménylánc után | `0x005c8320(panel, 0)` | ág `0x005e61f8`; kezelő `0x005e60d0` | feltételes: statikus ág dokumentált a §10.3-ban; futáspróba nincs ebben a körben |
+| `Ctrl` + `VK_MENU (0x12)` | CThumbUI / könyvtár-főnézet | `[panel+0xe78]` kapu; `[panel+0xe70]` azonosító olvasása | `0x005e65dc` | feltételes: az ág statikus; a funkció jelentése NINCS MEG |
+| `Ctrl+0` | CThumbUI / könyvtár-főnézet | Kattintja a `thumbui/toggle_right_drawer` elemet | `0x005e6206` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+1` | CThumbUI / könyvtár-főnézet | Kattintja a `thumbui/smallthumbs` elemet | `0x005e6215` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+2` | CThumbUI / könyvtár-főnézet | Kattintja a `thumbui/largethumbs` elemet | `0x005e6224` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+3` | CThumbUI / könyvtár-főnézet | Kattintja a `thumbui/fullview` elemet | `0x005e624f` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+4` | CThumbUI / könyvtár-főnézet; `0x005696c0` kapu | `0x005696c0` őr után `(0, panel)` hívás | `0x005e625e` | feltételes: statikus ág és őr dokumentált a §10.3-ban; futáspróba nincs |
+| `Ctrl+5` | CThumbUI / könyvtár-főnézet; `0x005696c0` kapu | `0x005696c0` őr után `(1, panel)` hívás | `0x005e6279` | feltételes: statikus ág és őr dokumentált a §10.3-ban; futáspróba nincs |
+| `Ctrl+6` | CThumbUI / könyvtár-főnézet | `0x00530ad0(panel)` | `0x005e6294` | feltételes: statikus ág a §10.3-ban; a belső funkció jelentése nincs teljesen feltárva |
+| `Ctrl+8` | CThumbUI / könyvtár-főnézet | `0x005e81e0(panel, 2)` | `0x005e6584` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+9` | CThumbUI / könyvtár-főnézet; `0x00579330` kapu | Kattintja az `editpanel/toggle_left_drawer` elemet | `0x005e629f` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+A` | CThumbUI / könyvtár-főnézet; `0x00579330` kapu | `0x005e5070(panel)` | `0x005e6471` | feltételes: statikus ág és őr a §10.3-ban; futáspróba nincs |
+| `Ctrl+Shift+B` | CThumbUI / könyvtár-főnézet | `0x005fe370(panel, "bw")` | `0x005e6370` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+C` | CThumbUI / könyvtár-főnézet | `0x005fe9f0`; az ág `edi` értéke választja szét a `Ctrl+X`-től | `0x005e63f5` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+X` | CThumbUI / könyvtár-főnézet | `0x005fe9f0`; az ág `edi` értéke választja szét a `Ctrl+C`-től | `0x005e63f5` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+D` | CThumbUI / könyvtár-főnézet; `0x00579330` kapu | `0x005e5310` | `0x005e6492` | feltételes: statikus ág és őr a §10.3-ban; futáspróba nincs |
+| `Ctrl+Shift+E` | CThumbUI / könyvtár-főnézet | `0x005fe370(panel, "enhance")` | `0x005e638b` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+F` | CThumbUI / könyvtár-főnézet | Kattintja a `searchcontainer/searchbutton` elemet | `0x005e63bb` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+G` | CThumbUI / könyvtár-főnézet; Ctrl+Shift/Alt elágazás | További módosító nélkül: nincs művelet | `0x005e6518` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Alt+G` | CThumbUI / könyvtár-főnézet; Alt+Shift külön ágon | Alt-tal Shift nélkül: nincs művelet | `0x005e6518` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Shift+G` | CThumbUI / könyvtár-főnézet | `0x00600580` | `0x005e6518` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Alt+Shift+G` | CThumbUI / könyvtár-főnézet | `0x0057b050` | `0x005e6518` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Shift+H` | CThumbUI / könyvtár-főnézet | `0x005eef30(panel, 2)` | `0x005e63d6` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+I` | CThumbUI / könyvtár-főnézet; `0x00579330` kapu | `0x005e5370(panel)` | `0x005e64f6` | feltételes: statikus ág és őr a §10.3-ban; futáspróba nincs |
+| `Ctrl+K` | CThumbUI / könyvtár-főnézet | `0x0065ab00`; ugyanaz az ág, mint `Ctrl+T` | `0x005e650e` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+T` | CThumbUI / könyvtár-főnézet | `0x0065ab00`; ugyanaz az ág, mint `Ctrl+K` | `0x005e650e` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Shift+L` | CThumbUI / könyvtár-főnézet | `0x004cce10([panel+0x2c4])` | `0x005e658e` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+M` | CThumbUI / könyvtár-főnézet | `0x005d3010(panel)` | `0x005e63ca` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+N` | CThumbUI / könyvtár-főnézet | Kattintja a `thumbui/newalbum` elemet | `0x005e6462` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+O` | CThumbUI / könyvtár-főnézet | Shift nélkül `0x005feb30` | `0x005e6233` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Shift+O` | CThumbUI / könyvtár-főnézet | `0x005c80e0` | `0x005e6233` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+P` | CThumbUI / könyvtár-főnézet; `0x005696c0` kapu | A kapu után a módosító szerinti ág választódik | `0x005e6428` | feltételes: statikus ág a §10.3-ban; a teljes látható művelet nincs itt újramérve |
+| `Ctrl+Shift+P` | CThumbUI / könyvtár-főnézet; `0x005696c0` kapu | A kapu után a Shift-ág választódik | `0x005e6428` | feltételes: statikus ág a §10.3-ban; a teljes látható művelet nincs itt újramérve |
+| `Ctrl+R` | CThumbUI / könyvtár-főnézet; `0x00562bf0` kapu | A kapu után a módosító szerinti ág választódik | `0x005e633e` | feltételes: statikus ág a §10.3-ban; a teljes látható művelet nincs itt újramérve |
+| `Ctrl+Shift+R` | CThumbUI / könyvtár-főnézet; `0x00562bf0` kapu | A kapu után a Shift-ág választódik | `0x005e633e` | feltételes: statikus ág a §10.3-ban; a teljes látható művelet nincs itt újramérve |
+| `Ctrl+S` | CThumbUI / könyvtár-főnézet; `0x005696c0` kapu | `+0x12` módosító mező szerinti ág | `0x005e64b4` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Alt+S` | CThumbUI / könyvtár-főnézet; `0x005696c0` kapu | `+0x12` módosító mező szerinti ág | `0x005e64b4` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Shift+U` | CThumbUI / könyvtár-főnézet | `0x0047ca60([panel+0x2bc])` | `0x005e6557` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Shift+V` | CThumbUI / könyvtár-főnézet | `0x005eef30(panel, 1)` | `0x005e6408` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+Shift+Y` | CThumbUI / könyvtár-főnézet | `0x005e5ec0(panel)` | `0x005e6572` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+F6` | CThumbUI / könyvtár-főnézet | Kattintja a `searchoptions/dupesearch` elemet | `0x005e62bb` (feloldás: `0x009c2fc0`) | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+F7` | CThumbUI / könyvtár-főnézet | `searchoptions/loadsim`, azonosító `0x15` | `0x005e62e8` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+F8` | CThumbUI / könyvtár-főnézet | `searchoptions/clearsim`, azonosító `0x16` | `0x005e631d` | feltételes: statikus ág a §10.3-ban; futáspróba nincs |
+| `Ctrl+F9` | CThumbUI / könyvtár-főnézet | Billenti a `[panel+0xdc4]` bájtot | `0x005e6329` | feltételes: statikus jelzőút a §10.3-ban; a nézőbeli látható következmény külön futásmérés (§10.35) |
+| `Ctrl+Left` | CThumbUI, csak projektlap-sáv aktív állapotában | `0x005b22b0(panel, -1)` - előző lap | kezelő `0x005b2390`; ág `0x005b23a6` | Feltételes: statikus leképezés a §10.15-ben; futáspróba e körben nincs. |
+| `Ctrl+Right` | CThumbUI, csak projektlap-sáv aktív állapotában | `0x005b22b0(panel, +1)` - következő lap | kezelő `0x005b2390`; ág `0x005b23b6` | Feltételes: statikus leképezés a §10.15-ben; futáspróba e körben nincs. |
+| `Ctrl+Tab` | CThumbUI, csak projektlap-sáv aktív állapotában | `0x005b22b0(panel, +1)` - következő lap | kezelő `0x005b2390`; ág `0x005b23c8` | Feltételes: statikus leképezés a §10.15-ben; futáspróba e körben nincs. |
+| `Ctrl+Shift+Tab` | CThumbUI, csak projektlap-sáv aktív állapotában | `0x005b22b0(panel, -1)` - előző lap | kezelő `0x005b2390`; ág `0x005b23c8`, Shift-vizsgálat a kezelőben | Feltételes: statikus leképezés a §10.15-ben; futáspróba e körben nincs. |
+| `Ctrl+W` | CThumbUI, csak projektlap-sáv aktív állapotában | `0x005b31a0(panel, …)`; feltétel `[panel+0x26c]` | kezelő `0x005b2390`; ág `0x005b23dd` | Feltételes: statikus leképezés a §10.15-ben; futáspróba e körben nincs. |
+| `+`, `=`, `-`, `_` | Szerkesztő, fókuszban lévő csúszka | A fókuszcsúszka léptetése: `+`/`=` növel, `-`/`_` csökkent; §10.14 szerinti `±0,02` | `0x005d2290`, karakterágak `0x005d22ac`-`0x005d22bb` | Megerősített a korábbi két konstans-olvasattal; jelen körben nem újramérve. |
+| `F1` | CThumbUI fő kezelő; az előnézeti/szerkesztőpanel őrei szerint | Súgó; őr 1 után `0x005d0cd0`, különben `editpanel/edithelpbutton` | `0x005e683a`, őrök `0x0057c430(1/2)` | Feltételes: egy statikus út ismert (§10.10); felhasználói megjelenés nincs újramérve. |
+| `F2` (`VK=0x71`, Ctrl nélkül) | CThumbUI; aktív kép/kijelölés mellett. Nézőben az esemény CThumbUI-hoz jutása még nyitott. | `cmd 0x9d4f` → közös átnevező `0x00532ec0`; feltételeit lásd alább | keydown-ág `0x005e68fd` → `0x005e6939`; parancsdiszpécser `0x005cb990` / `0x005cc4e8` → ugyanaz a `0x00532ec0` | **Megerősített statikus billentyű→parancs**: két külön belépő út ugyanoda hív. A megnyitott képnézőben való eseményelérés/hatás **nyitott**, Colab-próba kell. |
+| `F3` | CThumbUI fő kezelő | Kattintja a `searchcontainer/searchbutton` elemet | `0x005e69a4` → `0x009cd8a0` | Feltételes: egy statikus út ismert (§10.10); látható állapot nincs újramérve. |
+| `F4` | CThumbUI fő kezelő | Kattintja a `thumbui/startoggle` elemet, ha a feloldott elem engedélyezett | `0x005e696c` → `0x009cd110` | Feltételes: egy statikus út ismert (§10.10); a diavetítés tényleges indítása futáspróbára vár. |
+| `F5` | CThumbUI; a panel frissítési kapuján át | Frissítési jelző és `0x0065b840` út | `0x005e6869` | Statikus belépő ismert (§10.22, §10.26); lemezfrissítés kapui feltételesek. |
+| `F11` | CThumbUI fő kezelő | A vtable `+0x24` állapotát billenti, majd `0x00983fc0`-t hív | `0x005e68a0` | Feltételes: egy statikus út ismert (§10.10); a látható hatásra e körben nincs eredeti futáspróba. |
+| `F12` | CThumbUI fő kezelő | Továbbadja a Ctrl-ág függvényének, de az F12 kívül esik a táblatartományon | `0x005e69c2` → `0x005e60d0`; tartománykapu `0x005e61e1` | Feltételes: a fő ág és tartománykapu egy útból ismert; a funkció NINCS MEG (§10.6, §10.10). |
+| `F8`, `F9` (módosító nélkül) | CThumbUI szerkesztő-egyképes módjában: `[panel+0x332f] != 0` | `0x00760970` nem kezelő ágra tér vissza; a szülő a normál F-billentyű-ág előtt visszatér. Más fókuszú szerkesztőállapotban nincs teljes negatív leltár. | `0x00760970`, majd `0x005e6830` kapu | **Nyitott általánosan**; feltételes negatív csak a megnevezett szerkesztő-egyképes láncra. A `ui-audit-editor.md` nem tartalmaz leütéskötést. |
+| `Ctrl+F9` | CThumbUI főpanel; nem azonos a fenti módosító nélküli F9-cel | Billenti a `[panel+0xdc4]` bájtot; nézőbeli képléptető hatást korábbi Colab-kör mért, a kódút még nyitott | `0x005e6329`; Ctrl-kapu `0x005e6178`; futásmérés §10.35 | A statikus jelzőbillentés és a nézőbeli látható hatás külön bizonyíték; a kezelő pontos végpontja nyitott. |
+| `Esc`, `←`, `↑`, `→`, `↓`, `Space`, `VK_PAUSE (0x13)`, `VK_PLAY (0xfa)`, `0`-`9` | CThumbUI szerkesztő-egyképes mód, `[panel+0x332f] != 0` | `Esc` → `0x0075de50`; nyilak → gyűjtemény-navigáció `0x0075fb20` és frissítés `0x0075ffe0`; Space/Pause/Play az `editoneup/auto` elemet váltja a `[panel+0x3330]` kapuja szerint; számjegyek az egyképes sebesség-/időmezőt írják és szükség esetén `0x0075f960`-t hívják | `0x00760970` | Feltételes: egy statikus kezelőút; a nyílirány és a számjegy vizuális hatása részben nyitott. |
+| `Esc`, `←`, `↑`, `→`, `↓`, `Space`, `Ctrl+Space`, `0`-`9`, `F`, `B`, `O` | OneUpUI / `oneup` nézeti objektum (QDrawable-szülő) | `Esc` → `0x007fb820`; nyilak → `0x008011b0` / `0x00801210`; Space → az automatikus lejátszásjelző billentése (`0x00801130`); Ctrl+Space külön `[+0x3ba]` jelzőt ír; számjegyek a OneUp időmező útját (`0x00802ff0`) frissítik; F/B/O saját állapot-/nézetágra megy | `QDrawable::vftable +0x30 = 0x00801270`; OneUpUI thunk `0x00802e10`; konstruktorlánc `0x00802c60` | **Megerősített statikus út**: a WM_KEYDOWN/VK-ágak és a vtable→szülő-thunk lánc külön vizsgálatból egyezik. A betűk és egyes flag-ek látható jelentése nyitott. |
+| `F2` (`VK=0x71`) a OneUpUI/QDrawable lokális útján | Néző / `oneup` | A lokális handler nem tartalmaz F2-ágat, alapértelmezett `0xf4241`-et ad vissza. Ez **nem** bizonyítja, hogy a fölérendelt CThumbUI nem kapja meg a billentyűt. | `0x00801270` (VK-ágak), elérés `0x00802e10` | Feltételes: a lokális nem-kezelés megállapítható; a teljes nézőbeli hatás nyitott. |
+| `/`, `,`, `.` | Néző videólejátszója | A keymap megnevezése szerinti műveletek a fizikai billentyűtől a fogadóig **NINCS MEG**. A külön MovieMaker `MoviePreviewHandler` (`video_control_bar2`) belső műveletkódja ismert: `0x13` → pause/play (`0x00619ac0`); `0x18` + `VK_SPACE` → play/pause felületi állapot; `0x17` + `VK_SPACE` → stop; `0x0d` → feltételes fullscreen; `0x1f`/`0x20` → fullscreen-jelző be/ki. | A MovieMaker-fogadó: `0x006248e0`; a néző keymap-fizikai billentyűhöz kapcsolása **NINCS MEG**. A régi `0xBC/0xBE/0xBF` keresés csak meghatározott CMP-alakra terjedt ki. | Feltételes a belső kód→művelet ágra; nyitott a `/`, `,`, `.` fizikai billentyű→nézőfogadó út. Részletes lelet: `picasa-create-features.md` §2.7/c. |
+| Navigációs billentyűk (Backspace, Enter, Esc, Space, PgUp/PgDn, Home/End, nyilak, Insert/Delete, F1) | Fókuszált vezérlő vagy párbeszéd | Az általános út eseményobjektumot épít és a fókuszált elemnek továbbít; a konkrét parancs az elem saját kezelőjében van | `0x00a53b00` → `0x00a582f0`; táblák `0x00a53bb4` / `0x00a53ba8` | Az általános továbbítás megerősített (§10.18); az egyes dialogusok elemenkénti hatása a `picasa-eger-es-kijeloles.md` §8-ban van. |
+
+### 12.1 F2 a megnyitott képnézőben - statikus út és feltételek
+
+1. A `0x005e6710` csak a Ctrl-bit nélküli `WM_KEYDOWN` (`[MSG+4] == 0x100`, `[MSG+0x10] & 4 == 0`) F2 (`[MSG+8] == 0x71`) ágán jut el az átnevezéshez.
+2. A korábbi kezelőlánc nem fogyaszthatja el az eseményt: a `0x00760970`-es egyképes mód, a projektlap (`0x005b2390`), a fókuszált vezérlő (`0x00a53b00`), illetve a panel- és szerkesztési kapuk nem adhatnak kezelve-visszatérést; továbbá a `[panel+0x332f]` módjelző nem zárhatja le az F2-ágat.
+3. Az öt F2-kapu mindegyikének hamisnak kell lennie: `0x0056c420`, `0x0056c110`, `0x00562d00`, `0x005f2650`, `0x0057c430(4)`.
+4. A `[panel+0xeac]` kiválasztási objektumnak nem-nullnak kell lennie. A `0x007166c0` ebből vektort épít; a `[esp+0x14] & 0xfffffffe` vizsgálat miatt a kiválasztási vektor elemszáma nem lehet nulla.
+5. A `0x0057d430` összehasonlító/állapotkapunak hamisnak kell visszatérnie. A belső összehasonlítás pontos felhasználói jelentése ebből a disassembly-ből **NINCS MEG**.
+6. E kapuk után a billentyűkezelő meghívja a `0x00532ec0` átnevező függvényt. A független parancsút a `0x005cb990` magas parancstábláján `cmd 0x9d4f`-et ugyanoda (`0x00532ec0`) irányítja.
+
+**Következtetés.** A statikus bináris megerősíti, hogy a CThumbUI F2-je átnevezés, és a művelethez nem üres kijelölés plusz az öt hamis kapu szükséges. A nyitott képnézőben azt, hogy a billentyű eseménye eljut-e a CThumbUI-hoz, és a fenti vektor a megnyitott képet tartalmazza-e, csak az eredeti program célzott futáspróbája dönti el; erre a kör nem tesz feltétel nélküli állítást.
+
+**Futáspróba (picasa-colab-jobs #374, 2026-11-05).** Az eredeti Picasa 3.9-ben egy bélyegkép kijelölése után az F2 a könyvtárnézetben, dupla kattintással megnyitott képnézőben pedig ugyanúgy megnyitja a „Rename Files” párbeszédet (az ablaklista a 7. és a 13. lépés előtt `['Picasa 3', 'Rename Files']`, a párbeszéd 320x171 képpont, középen). A párbeszédben a fájlnév kijelölve áll, alatta a „Date” és az „Image resolution” jelölőnégyzet és egy „Example:” sor. Ezzel a nyitott képnézőbeli F2 elérése **mérve igazolt**; a PicasaPy #6530 javítása ezt követi.
+
+### 12.2 Cáfoló kísérlet
+
+**Ellenhipotézis:** a OneUpUI saját billentyűkezelője közvetlenül átnevez F2-re. A `0x00801270` teljes áglistájában a VK `0x71` nincs a kezelt ágak között; az alapértelmezett ág `0xf4241`. A OneUpUI +0x30 thunk (`0x00802e10`) a szülő `QDrawable` +0x30 metódusára (`0x00801270`) továbbít, tehát a lokális átnevezési hipotézis megdőlt. Ugyanakkor a `CThumbUI`-hoz esetleges továbbjutást ez nem cáfolja, ezért a nézőbeli F2 eredmény továbbra is nyitott. A cáfoló kontrollja: a konstruktor (`0x00802c60`), a szülő `QDrawable` vtable (`0x00cbd66c`) és a OneUpUI thunk (`0x00802e10`) mind ugyanarra a metódusra vezettek.
+
+### 12.3 Eredeti Picasa-próbasorok a Colab `ui_capture`-hez
+
+Az alábbi sorok az eredeti Picasa számára **teszttervek, nem végrehajtott próbák**. A `kattint` koordinátája és a `var` várakozása nincs megmérve, ezért nem adok meg kitalált értéket. A hívó minden billentyű után mentse a képernyőképet, és a rács-/videóbélyegkép koordinátáját a saját aktuális Colab-képéről vegye.
+
+| nézet | kezdőfeltétel és `ui_capture` lépéssor | mit kell a képernyőképen ellenőrizni |
+|---|---|---|
+| Könyvtár | `kattint [NINCS MEG - egy kép bélyegképe]` → `billentyu F2` → `var NINCS MEG` | Átnevezési felület jelenik-e meg kijelölt képnél; utána Escape. |
+| Néző (megnyitott kép) | `kattint [NINCS MEG - egy kép bélyegképe]` → `billentyu Enter` → `var NINCS MEG` → `billentyu F2` → `var NINCS MEG` | Az F2 eljut-e átnevezésig a nyitott kép mellett; jegyezze fel a képen látható kijelölést/aktív fókuszt. Ez dönti el a nyitott CThumbUI-eseményút kérdését. |
+| Szerkesztő | Könyvtárból kijelölt képpel: `billentyu ctrl+3` → `var NINCS MEG` → `billentyu F8` → `var NINCS MEG` → `billentyu F9` → `var NINCS MEG` | F8 és F9 hatását külön képernyőképen rögzíteni; ha a szerkesztőnézetet más úton kell megnyitni, az út **NINCS MEG**. |
+| Diavetítés / OneUp | Könyvtárból: `billentyu ctrl+4` → `var NINCS MEG` → `billentyu Space` → `var NINCS MEG` → `billentyu Esc` | Megnyílik-e a diavetítés; Space vált-e automatikus lejátszást; Esc visszatér-e. A képkockák rögzítése után próbálható F2 is. |
+| Videó | `kattint [NINCS MEG - videóbélyegkép]` → `billentyu Enter` → `var NINCS MEG`; majd egyenként `billentyu /`, `billentyu ,`, `billentyu .` és mindegyik után `var NINCS MEG` | Lejátszás/szünet, vissza- és előrelépés külön képernyőképe; a lejátszó fókuszát a képen ellenőrizze. |
+| Párbeszéd | Könyvtárból: `billentyu ctrl+O` → `var NINCS MEG` → `billentyu Esc` | A fájlmegnyitó párbeszéd megjelenik-e és az Esc bezárja-e. Másik dialogus kiválasztott billentyűútja **NINCS MEG**. |
+
+**Futáspróba (picasa-colab-jobs #375, 2026-11-05).** Az eredeti Picasa 3.9-ben, az `idorend` mintakészlettel, egy kijelölt bélyegképpel a Szerkesztő, a Diavetítés és a Párbeszéd sorát lefuttattam; minden lépés előtt képernyőkép és ablaklista készült (26 kép).
+
+| billentyű | az eredetiben (a lépés utáni kép) | PicasaPy |
+|---|---|---|
+| `Ctrl+3` kijelölt képpel | megnyílik a szerkesztőnézet az Alapvető javítások lappal (7. kép) | ugyanez: `MainKeyboardShortcuts.qml` `Ctrl+3`, valódi leütéssel tesztelve (`test_gyorsbillentyuk_valodi_5150_n.py`) |
+| `F8`, `F9` a szerkesztőben | semmi nem változik: a 8-12. kép képpontra azonos | nálunk sincs módosító nélküli F8/F9-kezelő (§12.4), tehát egyezik |
+| `Escape` a szerkesztőben | vissza a könyvtárnézetbe (13. kép) | egyezik |
+| `Ctrl+4` | teljes képernyős diavetítés indul, magától lapoz (15. és 16. kép eltér) | egyezik (`test_gyorsbillentyu_matrix_6531.py`) |
+| első `Space` | a vetítés megáll: a 17. és a 4 mp-cel későbbi 18. kép azonos, a beállított lapozási idő 3 mp | egyezik: `SlideshowView.qml` `Keys.onSpacePressed` → `togglePause()` |
+| második `Space` | a vetítés továbbmegy (19. és 20. kép eltér) | egyezik |
+| `Escape` a vetítésben | vissza a könyvtárnézetbe (21. kép) | egyezik |
+| `Ctrl+O` | megnyílik az „Open” fájlválasztó, fájltípus „Picture and Movie Files” (ablaklista a 23. lépés előtt `['Open', 'Picasa 3']`) | a Fájl ▸ Fájl felvétele (`Ctrl+O`) natív fájlválasztót nyit |
+| `Escape` a fájlválasztóban | a párbeszéd bezárul (25. kép) | a natív párbeszéd saját viselkedése |
+
+**Csak mérés, eltérés:** szünetben az eredetiben a vetítés alján látszik a vezérlősáv (17-18. kép), a második Space után eltűnik (19. kép); nálunk a sáv csak egérmozgásra jelenik meg. A szünet ágát a binárisban megnéztem: a `0x00801130` a `[+0x3bb]` lejátszásjelzőt fordítja, szünetnél a `0x00802230` frissítőt hívja és újrarajzol, folytatásnál a `0x00802c20`-at; a sáv megjelenítése egyik ágban sincs. Amíg a sáv szünetbeli megjelenésének bináris forrása nincs meg, a PicasaPy-on nem változtatunk; a következő irány a `oneup.tre` `auto` gombjának kezelője (`0x00803486`, `0x00803110`) körül a sáv láthatóságát író mező keresése.
+
+**Körhatár:** a videós `/`, `,`, `.` sor nem futott: a végrehajtó ezeket a billentyűket videólejátszóban nem tudja megbízhatóan leütni. A PicasaPy meglévő billentyűtesztjeinek helyi eredménye a §12.4-ben szerepel.
+
+### 12.4 PicasaPy - meglévő valódi billentyűpróbák (2026-11-05)
+
+A kijelölt, már létező QML-teszteket a projekt futtatójával futtattam, a
+munkafa `.tmp/` könyvtárát ideiglenes tárként használva. A futtató mind a
+nyolc fájlnál sikeres kilépést jelzett. A helyi Qt **6.8.2.1**, a futtató
+által jelzett CI-verzió **6.11.2**; ezért az eredmény nem CI-azonos.
+
+| Tesztfájl | Eredmény | Tényleges billentyűpróba / korlát |
+|---|---:|---|
+| `test_gyorsbillentyu_matrix_6531.py` | 10 passed | Valódi `QTest.keyClick`: könyvtári `Ctrl+4`, állóképes néző `Space`, `Ctrl+A/D`, `Ctrl+R`, `Ctrl+Shift+R`, `Ctrl+S`, `Ctrl+Shift+S`; több ablakmagassággal is. |
+| `test_nezo_ctrl_f9_folyamatos_leptetes_4698.py` | 4 passed | `Ctrl+F9` a nézőben, kézi jobbra lapozás, nézőbezárás és könyvtárnézet kapuja. |
+| `test_gyorsbillentyuk_valodi_5150_n.py` | 19 passed | Valódi leütések többek között `Ctrl+0`, `Ctrl+K`, `F3`, `F4`, `Ctrl+3`, `F11`, `Ctrl+F8` és a kijelölt képre és a menüre vonatkozó utak. |
+| `test_gyorsbillentyuk_1616.py` | 28 passed | Valódi `Ctrl+N` új albumhoz és keresőfókusz-/kijelölési kapukhoz; a fájl további esetei nem egyedi leltársorok. |
+| `test_felsomenupontok_gyorsbillentyuk_4329.py` | 6 passed | Valódi `Ctrl+E` küldési és `Ctrl+H` tálcamegtartási út. |
+| `test_tags_shortcut_focus_6301.py` | 3 passed | Valódi `Ctrl+T`, a Címkék-mező fókusza és visszatérés. |
+| `test_shortcut_focus_4398.py` | 15 passed | A futáskor felolvasott 62 QML `Shortcut`-szekvencia valódi leütése keresőmező-fókusszal; fókuszkapu, nem parancsonkénti működési próba. |
+| `test_view_options_people_shortcuts_4528.py` | 1 passed | Mappanézet-menü szerkezete és egérrel választott rendezés; nem billentyűleütéses bizonyíték. |
+
+**Fennmaradó tesztleltár-rés:** a fenti futás nem adott próbasort minden §12-es billentyűhöz. A célzott forráskeresés nem talált `/`, `,`, `.` billentyűtesztet vagy módosító nélküli F8/F9-próbát; az F8/F9-találatok Ctrl+F8-at és Ctrl+F9-et fednek le. A `PhotoViewerKeyboard.qml` jelenlegi `Keys` ágai között sincs `/`, `,`, `.`, plain F8 vagy plain F9; a `VideoPlayerView.qml` nem deklarál saját `Keys.onPressed`/`Keys.onReleased` kezelőt. Ez forrásleltár, nem futásidejű negatív mérés. A teljes megfeleltetés továbbra is nyitott.
+
+#### Helyi Codex-újrafuttatás (2026-11-05)
+
+A §11 táblájában hivatkozott 23 tesztfájlt és a §12.4-ben szereplő további hat gyorsbillentyű-fájlt egyenként újrafuttattam: **29 fájl, 361 passed, 1 skipped**. A QML-fájlok `QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software` beállítással futottak; a helyi PySide6-verzió **6.8.2.1**. Két futásban a `TrayTopRow.qml` és `TrayInfoBar.qml` `TypeError` naplófigyelmeztetései jelentek meg, a pytest ettől zölden zárt.
+
+Ez az összesítés **nem** zárja le a teljes mátrixot: a §11 teszthivatkozásai között menü-/struktúra- és parancsteszt is van, ezek nem mind külön `QTest.keyClick`-próbák a hozzájuk tartozó gyorsbillentyűre. A soronkénti PicasaPy-leütéspróbák hiányát továbbra is a fenti táblázat és a §12.4 rögzíti. Ebben a munkamenetben új Colab-futtatás nem indult; a §12.3 eredeti-Picasa eredményei csak az ott nevesített részhalmazra érvényesek.

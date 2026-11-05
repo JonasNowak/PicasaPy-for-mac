@@ -5,9 +5,12 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+import subprocess
 import tempfile
 
 KILEPESI_HATARIDO_MP = 20.0
+#: modulszintű fogantyú (#1375): a teszt ezt cseréli, nem a globális subprocess-t
+_popen = subprocess.Popen
 
 
 def installation_kind(
@@ -74,20 +77,40 @@ def kenyszeritett_kilepes_ha_beragad(
     idozito.start()
 
 
-def inditsd_a_segedet(args: list[str], *, emelt: bool, platform: str) -> bool:
-    """A frissítő segéd indítása; UAC-ot csak akkor kér, ha `emelt` (#6340)."""
-    import subprocess
-
-    if platform != "win32":
-        subprocess.Popen(args, close_fds=True)
-        return True
+def _shell_execute(*args):
+    """A Windows ShellExecuteW hívása; a tesztek ezt a fogantyút foltozzák (#6557, #1375)."""
     import ctypes
 
+    return ctypes.windll.shell32.ShellExecuteW(*args)
+
+
+def inditsd_a_segedet(args: list[str], *, emelt: bool, platform: str) -> bool:
+    """A frissítő segéd indítása; UAC-ot csak akkor kér, ha `emelt` (#6340)."""
+    # #6534: a segéd munkamappája a saját mappája legyen, ne a miénk. A programot
+    # az Intéző a telepítési mappából indítja, és Windowson egy mappa nem
+    # nevezhető át, amíg bármely folyamat munkamappája benne van (WinError 32).
+    munkamappa = str(Path(args[0]).parent)
+    if platform != "win32":
+        _popen(args, close_fds=True, cwd=munkamappa)
+        return True
     params = subprocess.list2cmdline(args[1:])
-    result = ctypes.windll.shell32.ShellExecuteW(
-        None, "runas" if emelt else "open", str(args[0]), params, None, 0
+    result = _shell_execute(
+        None, "runas" if emelt else "open", str(args[0]), params, munkamappa, 0
     )
-    return result > 32
+    if result <= 32:
+        _UTOLSO_HIBA["szoveg"] = f"ShellExecute {result}"
+        return False
+    _UTOLSO_HIBA["szoveg"] = ""
+    return True
+
+
+#: #6458: az utolsó sikertelen segédindítás oka, a hibaüzenetbe
+_UTOLSO_HIBA = {"szoveg": ""}
+
+
+def utolso_inditasi_hiba() -> str:
+    """Az utolsó sikertelen frissítősegéd-indítás oka (pl. „ShellExecute 5”)."""
+    return _UTOLSO_HIBA["szoveg"] or "ismeretlen ok"
 
 
 def update_command(kind: str) -> str:

@@ -45,7 +45,6 @@ ALLAPOTOK = (
     "szerkeszto-3",
     "szerkeszto-4",
     "szerkeszto-5",
-    "szerkeszto-6",
     "arcreteg",
     "teljes-kepernyo",
 )
@@ -190,7 +189,6 @@ def test_capture_creates_visible_main_and_viewer_states(
             "editTabEffects2",
             "editTabEffects3",
             "editTabEffects4",
-            "editTabLegacy",
         )
     ):
         required[f"szerkeszto-{index}"] = {"photoViewer", "viewerEditorPanel", tab_name}
@@ -215,8 +213,8 @@ def test_capture_creates_visible_main_and_viewer_states(
     assert records["alapnezet"]["left_drawer_width"] <= 2
     assert records["bal-fiok-nyitva"]["left_drawer_width"] > 200
     assert records["filmcsik"]["filmstrip_count"] > 0
-    assert [records[f"szerkeszto-{index}"]["active_tab"] for index in range(7)] == list(
-        range(7)
+    assert [records[f"szerkeszto-{index}"]["active_tab"] for index in range(6)] == list(
+        range(6)
     )
     assert records["arcreteg"]["face_count"] > 0
     assert records["teljes-kepernyo"]["fullscreen"] is True
@@ -323,6 +321,47 @@ def test_elteres_reszletei_felsorolja_a_keppontokat(tmp_path: Path) -> None:
 
 def test_capture_waits_past_a_late_preview_frame() -> None:
     _assert_capture_waits_past_a_late_preview_frame()
+
+
+def test_capture_varja_a_modal_parbeszed_atmeneteinek_vegere() -> None:
+    class _Parbeszed:
+        def __init__(self) -> None:
+            self.visible = False
+            self.opened = False
+
+        def property(self, name: str) -> bool:
+            return bool(getattr(self, name))
+
+    class _Alkalmazas:
+        def __init__(self, parbeszed: _Parbeszed) -> None:
+            self.parbeszed = parbeszed
+            self.esemenyek = 0
+
+        def processEvents(self) -> None:
+            self.esemenyek += 1
+            if self.esemenyek == 2:
+                self.parbeszed.visible = True
+            elif self.esemenyek == 4:
+                self.parbeszed.opened = True
+            elif self.esemenyek == 6:
+                self.parbeszed.opened = False
+            elif self.esemenyek == 8:
+                self.parbeszed.visible = False
+
+    parbeszed = _Parbeszed()
+    alkalmazas = _Alkalmazas(parbeszed)
+
+    screenshot_script._var_modal_parbeszed_allapotara(
+        alkalmazas, parbeszed, nyitva=True, allapot="nyitás"
+    )
+    assert parbeszed.visible and parbeszed.opened
+    assert alkalmazas.esemenyek == 4
+
+    screenshot_script._var_modal_parbeszed_allapotara(
+        alkalmazas, parbeszed, nyitva=False, allapot="bezárás"
+    )
+    assert not parbeszed.visible and not parbeszed.opened
+    assert alkalmazas.esemenyek == 8
 
 
 def test_compare_reports_exact_pixel_count_rectangle_and_diff(tmp_path: Path) -> None:

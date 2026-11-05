@@ -1,0 +1,225 @@
+name: Önfrissítés a felhasználó útján
+
+# #6458: a tulajdonos útja, lépésről lépésre: a KORÁBBI kiadás Setup-ját
+# telepíti az alapértelmezett helyre (felhasználói telepítés, mint a
+# tulajdonosnál), elindítja, a VALÓDI GitHub-kiadásból letölti az újat, és
+# valódi egérkattintással megnyomja az „Újraindítás most” gombot. A próba
+# akkor zöld, ha utána az új verzió fut, és a Névjegy is azt mutatja.
+
+on:
+  workflow_dispatch:
+    inputs:
+      regi_verzio:
+        description: "A telepítendő korábbi kiadás (pl. 1.0.21); üresen az utolsó előtti"
+        required: false
+        default: ""
+  workflow_run:
+    workflows: ["Package"]
+    types: [completed]
+    branches: [main]
+  pull_request:
+    paths:
+      - ".github/workflows/frissites-valodi-ut.yml"
+      - "packaging/windows/csomag_meres*.py"
+      - "src/picasapy/app/update_*.py"
+      - "packaging/windows/picasapy_update_helper*"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  dontes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      futtat: ${{ steps.dontes.outputs.futtat }}
+    steps:
+      - name: A csomagfutás Setup-jának ellenőrzése
+        id: dontes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          PACKAGE_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          PACKAGE_RUN_ID: ${{ github.event.workflow_run.id }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          # Kézi indításnál és a javító PR-en nincs Package-futás, de a próba
+          # ilyenkor is fusson a legfrissebb valódi kiadással.
+          if [ "$EVENT_NAME" != "workflow_run" ]; then
+            echo "futtat=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "futtat=false" >> "$GITHUB_OUTPUT"
+          if [ "$PACKAGE_CONCLUSION" != "success" ]; then
+            echo "::notice title=A Package-futás nem sikerült::Az önfrissítési próba kimarad."
+            exit 0
+          fi
+
+          # A futásszintű jelölő a Package pontos tagjét őrzi meg. Enélkül a
+          # régi kiadás Setup-ja egy új kiadás nélküli Package után is
+          # tévesen elindítaná a próbát.
+          if ! artifact_id="$(gh api "repos/$REPOSITORY/actions/runs/$PACKAGE_RUN_ID/artifacts" \
+            --jq '[.artifacts[] | select(.name == "setup-release-marker" and .expired == false) | .id][0] // ""')"; then
+            echo "::error::A Package-futás jelölője nem ellenőrizhető."
+            exit 1
+          fi
+          if [ -z "$artifact_id" ]; then
+            echo "::notice title=Nincs új Setup::Ez a Package-futás nem csomagolt kiadási Setup-ot."
+            exit 0
+          fi
+
+          marker_dir="$RUNNER_TEMP/setup-release-marker"
+          mkdir -p "$marker_dir"
+          gh run download "$PACKAGE_RUN_ID" --repo "$REPOSITORY" \
+            --name setup-release-marker --dir "$marker_dir"
+          tag="$(cat "$marker_dir/tag")"
+          verzio="$(cat "$marker_dir/verzio")"
+          if [ -z "$tag" ] || ! [[ "$verzio" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]]; then
+            echo "::error::A Package futásának Setup-jelölője hibás."
+            exit 1
+          fi
+
+          setup_nev="PicasaPy-Setup-$verzio.exe"
+          if ! asset_nevek="$(gh release view "$tag" --repo "$REPOSITORY" --json assets --jq '.assets[].name')"; then
+            echo "::error::A(z) $tag kiadás Setup-eszköze nem ellenőrizhető."
+            exit 1
+          fi
+          if printf '%s\n' "$asset_nevek" | grep -Fxq "$setup_nev"; then
+            echo "futtat=true" >> "$GITHUB_OUTPUT"
+            echo "A(z) $tag kiadáson megtalálható a $setup_nev, indul az önfrissítési próba."
+          else
+            echo "::notice title=Hiányzó Setup::A(z) $tag kiadáson nincs $setup_nev, a próba kimarad."
+          fi
+
+  frissites:
+    needs: dontes
+    if: needs.dontes.outputs.futtat == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1 = az utolsó előtti kiadás, 2 = az azelőtti: aki egy-két verzióval
+        # le van maradva, annak is frissülnie kell
+        hanyadik: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: A mérő függőségei
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install $(python scripts/print_dependencies.py)
+
+      - name: A két kiadás kiválasztása
+        id: verzio
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REGI: ${{ github.event.inputs.regi_verzio }}
+        run: |
+          uj=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)
+          uj=${uj#v}
+          if [ -n "$REGI" ]; then
+            regi=${REGI#v}
+          else
+            regi=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-pre-releases --limit 10 \
+                     --json tagName -q '.[].tagName' | sed 's/^v//' | grep -vx "$uj" \
+                     | sed -n "${{ matrix.hanyadik }}p")
+          fi
+          echo "regi=$regi" >> "$GITHUB_OUTPUT"
+          # #6458: az 1.0.30 frissítősegédje már kivárja/leállítja a frissítés
+          # közben kézzel újraindított régi programot; attól kezdve ezt is próbáljuk
+          if [ "$(printf '%s\n' 1.0.30 "$regi" | sort -V | head -1)" = "1.0.30" ]; then
+            echo "kozben=--kozben-inditas" >> "$GITHUB_OUTPUT"
+          else
+            echo "kozben=" >> "$GITHUB_OUTPUT"
+          fi
+          echo "uj=$uj" >> "$GITHUB_OUTPUT"
+          echo "Korábbi kiadás: $regi -> legújabb kiadás: $uj"
+
+      - name: A korábbi kiadás Setup-jának letöltése
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/setup"
+          gh release download "v${{ steps.verzio.outputs.regi }}" --repo "$GITHUB_REPOSITORY" \
+            --pattern "PicasaPy-Setup-${{ steps.verzio.outputs.regi }}.exe" --dir "$RUNNER_TEMP/setup"
+          ls -la "$RUNNER_TEMP/setup"
+
+      - name: Telepítés az alapértelmezett helyre (mint a tulajdonosnál)
+        id: telepites
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $setup = Join-Path $env:RUNNER_TEMP "setup\PicasaPy-Setup-${{ steps.verzio.outputs.regi }}.exe"
+          # nincs /DIR: a Setup a saját alapértelmezett helyére telepít
+          $p = Start-Process -FilePath $setup -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-", "/CURRENTUSER") -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "a telepítés nem futott le: $($p.ExitCode)" }
+          $dir = Join-Path $env:LOCALAPPDATA "Programs\PicasaPy"
+          $exe = Join-Path $dir "PicasaPy.exe"
+          if (-not (Test-Path $exe)) {
+            Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA "Programs") -ErrorAction SilentlyContinue | Format-Table Name
+            throw "a telepített PicasaPy.exe nincs az alapértelmezett helyen: $exe"
+          }
+          Write-Host "Telepítve: $dir"
+          Get-ChildItem -Path $dir -File | Select-Object Name, Length | Format-Table
+          $helper = Join-Path $dir "PicasaPyUpdateHelper.exe"
+          Write-Host "Frissítősegéd a telepítésben: $(Test-Path $helper)"
+          "exe=$exe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Önfrissítés valódi kattintással, a valódi GitHub-kiadásból
+        shell: bash
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          python packaging/windows/csomag_meres.py frissites \
+            --futtato "telepitett=${{ steps.telepites.outputs.exe }}" \
+            --munka "$RUNNER_TEMP/frissites" \
+            --kepernyokep-mappa "$RUNNER_TEMP/frissites-kepek" \
+            --elvart-verzio "${{ steps.verzio.outputs.regi }}" \
+            --valodi-cel-verzio "${{ steps.verzio.outputs.uj }}" \
+            ${{ steps.verzio.outputs.kozben }}
+
+      - name: Képernyőképek és diagnosztika csatolása
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frissites-valodi-ut-${{ matrix.hanyadik }}
+          path: |
+            ${{ runner.temp }}/frissites-kepek
+            ${{ runner.temp }}/frissites/diagnosztika
+          if-no-files-found: warn
+
+  kep-a-kiadasba:
+    needs: frissites
+    if: github.event_name == 'workflow_run' && needs.frissites.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Az első önfrissítési próba ablakának letöltése
+        uses: actions/download-artifact@v4
+        with:
+          name: frissites-valodi-ut-1
+          path: ${{ runner.temp }}/frissites-valodi-ut-1
+
+      - name: A frissítési ablak képének csatolása a kiadáshoz
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          kep="$RUNNER_TEMP/frissites-valodi-ut-1/frissites-kepek/05b-frissites-folyamatban-ablak.png"
+          test -s "$kep" || { echo "::error::A frissítési ablak képe hiányzik."; exit 1; }
+          tag="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)"
+          gh release upload "$tag" "$kep#PicasaPy-frissitesi-folyamat.png" \
+            --repo "$GITHUB_REPOSITORY" --clobber
