@@ -36,9 +36,16 @@ elindulni, az okát a program a hibanaplóba írja, nem hagyja némán.
 A háttérkeresés **kíméli a gépet**: amíg dolgozol a programban (az utolsó
 billentyűleütés, kattintás vagy egérmozdulat után fél percig), és amíg a
 nézőben vagy a szerkesztőben egy kép nyitva van, szünetel, utána pedig
-fékezve, szünetekkel halad. Ha a könyvtár nem változott, nem olvas be
-mindent újra. Az **Eszközök ▸ Arcok keresése…** ablakból indított keresés
+fékezve, szünetekkel halad. Ha csak néhány kép vár (legfeljebb húsz),
+a keresés munka közben sem áll meg, hanem végigfut rajtuk. Amíg a
+háttérkeresés szünetel, a háttérművelet-jelző nem pörög: csak akkor
+látszik, amikor a program tényleg képeket néz át. Ha a könyvtár nem
+változott, nem olvas be mindent újra. Az **Eszközök ▸ Arcok keresése…** ablakból indított keresés
 nem vár, az a lehető leggyorsabban fut.
+
+Ha kilépsz a programból, miközben a háttérkeresés fut, a keresés a
+következő képnél megáll, és elmenti, amit addig talált. A következő
+indításkor onnan folytatja, a még át nem nézett képekkel.
 
 A keresés **ritkán jelöl arcot ott, ahol nincs**: egy tájképen vagy
 más, arc nélküli felvételen nem jelenik meg téves keret.

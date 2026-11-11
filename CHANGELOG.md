@@ -7,6 +7,29 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 
 ## [Nem kiadott]
 
+## [1.0.99] - 2026-11-11
+
+- A PicnikGrain és a Lágyítás szűrőláncban is a Picasa alfaállapotát követi (#6812).
+
+## [1.0.98] - 2026-11-11
+
+- Az Időrend az azonos napi gyűjteményeket a legkorábbi teljes felvételi időpont alapján rendezi (#6807).
+
+## [1.0.97] - 2026-11-11
+
+- Megbízhatóbbá váltak a Windowsos indulási és felületi regresszió-ellenőrzések (#6800).
+
+## [1.0.96] - 2026-11-10
+
+- A rövid arckeresési sorok folyamatos használat közben is végigfutnak, és a keresés jelzése csak feldolgozáskor látszik (#6793).
+
+## [1.0.95] - 2026-11-10
+
+- Az Irányított fényerő után alkalmazott Vetett árnyék az eredeti Picasához hasonlóan a háttérszínt mutatja a kép helyén (#6788).
+- A vezérlők tesztjei a végükön leállítják a háttérszálakat, így a tesztkészlet nem omlik össze időnként (#6791).
+- A háttérmunka-jelző tesztje megvárja az export utáni második háttérmunka végét is, így nem bukik időnként (#6794).
+- A szerkesztő visszalapozási tesztje csak a saját képeit számolja, így nem bukik időnként (#6796).
+
 ## [1.0.94] - 2026-11-10
 
 - Exportáláskor ritkán előforduló összeomlás kockázata csökken: a képszerkesztő moduljai az ablak megjelenése után a fő szálon töltődnek be, nem háttérszálon (#6775).
