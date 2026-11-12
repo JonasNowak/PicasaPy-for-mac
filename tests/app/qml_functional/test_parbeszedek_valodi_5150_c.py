@@ -164,8 +164,10 @@ class TestAltalanosFul:
         )
         assert _varj(qt_app, lambda: bool(importer.property("autoExclude")) is False)
         # a sync kiírja az importáló tárát a lemezre; az új példány már onnan olvas
-        importer._get_settings().sync()
-        assert QSettings("PicasaPy", "PicasaPy").value("import/autoexclude") == "false", (
+        tar = importer._get_settings()
+        tar.sync()
+        lemezrol = QSettings(tar.fileName(), QSettings.Format.IniFormat)
+        assert str(lemezrol.value("import/autoexclude")).lower() == "false", (
             "a kikapcsolt Duplikátumok jelölő értéke nem került a lemezre"
         )
         _zar(qt_app, beallitasok)
@@ -313,7 +315,11 @@ class TestExportParbeszed:
         _elokeszit(window, qt_app, controller)
         dialog = _export_megnyit(window, qt_app)
         sor = _gyerek(dialog, "exportSizeRow")
-        assert sor.property("enabled") is False, "az eredeti méret az alapérték"
+        assert sor.property("enabled") is True, "az Átméretezés az alapérték (#6866)"
+        _klikk_ablakban(qt_app, window, _gyerek(dialog, "exportSizeOriginalRadio"))
+        assert _varj(qt_app, lambda: sor.property("enabled") is False), (
+            "az Eredeti méret radio kattintása nem tiltotta le a méretsort"
+        )
 
         _klikk_ablakban(qt_app, window, _gyerek(dialog, "exportSizeResizeRadio"))
 

@@ -9,6 +9,10 @@ Item {
     property var trayBar
     anchors.fill: parent
 
+    function openGooglePhotosUploadDialog() {
+        googlePhotosUploadDialog.open()
+    }
+
         // `thumbui/separator`: 2 képpont, `0, .365, -3` … `1, 1, -17`,
         // y 50…52 a sáv tetejétől — nálunk (a 20-as infó-csík alatt)
         // y 30…32.
@@ -178,16 +182,36 @@ Item {
                     Item { Layout.fillWidth: true }
                     PicasaButton {
                         objectName: "googlePhotosUploadCancelButton"
-                        text: actionArea.actionController && actionArea.actionController.photosUploadRunning
+                        text: actionArea.actionController
+                                && (actionArea.actionController.photosUploadRunning
+                                    || actionArea.actionController.googlePhotosAuthBusy)
                             ? qsTr("Cancel") : qsTr("Close")
                         onClicked: {
-                            if (actionArea.actionController && actionArea.actionController.photosUploadRunning)
+                            if (actionArea.actionController
+                                    && (actionArea.actionController.photosUploadRunning
+                                        || actionArea.actionController.googlePhotosAuthBusy))
                                 actionArea.actionController.cancelGooglePhotosUpload()
                             else
                                 googlePhotosUploadDialog.close()
                         }
                     }
                 }
+            }
+        }
+
+        // A mappa-fejléc is innen indítja ugyanazt az OAuth/feltöltési
+        // folyamatot. A közös dialógus mutatja a várakozást, hibát és Mégsét.
+        Connections {
+            target: actionArea.actionController
+            ignoreUnknownSignals: true
+
+            function onPhotosUploadChanged() {
+                var ctl = actionArea.actionController
+                if (!ctl)
+                    return
+                if (ctl.googlePhotosAuthBusy || ctl.photosUploadRunning
+                        || ctl.photosUploadError || ctl.photosUploadFinished)
+                    googlePhotosUploadDialog.open()
             }
         }
 

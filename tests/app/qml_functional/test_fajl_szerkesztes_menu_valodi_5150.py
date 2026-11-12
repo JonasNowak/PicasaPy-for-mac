@@ -26,7 +26,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from PySide6.QtCore import QMetaObject, Qt
+from PySide6.QtCore import QMetaObject, QObject, Qt
 from PySide6.QtTest import QSignalSpy
 
 from conftest import _build_qml_app
@@ -120,6 +120,19 @@ def _zar_ha_nyitva(window, qt_app, nev: str) -> None:
         qt_app.processEvents()
 
 
+
+def _album_ablak_ok(window, qt_app) -> None:
+    """#6861: a Fájl ▸ New Album / Ctrl+N az Album Properties ablakot nyitja
+    (Colab-mérés), az album az OK után jön létre."""
+    dialog = window.findChild(QObject, "toolbarNewAlbumPropertiesDialog")
+    assert dialog is not None and dialog.property("opened") is True, (
+        "nem nyílt meg az Album Properties ablak"
+    )
+    ok = dialog.findChild(QObject, "folderPropertiesOkButton")
+    assert ok is not None, "az Album Properties OK gombja nem található"
+    QMetaObject.invokeMethod(ok, "clicked", Qt.ConnectionType.DirectConnection)
+    qt_app.processEvents()
+
 class TestUjAlbumEsMappa:
     def test_az_uj_album_valodi_kattintassal_letrehozza_az_albumot(
         self, fajl_app, qt_app
@@ -129,6 +142,13 @@ class TestUjAlbumEsMappa:
         assert controller.albums == []
 
         _fajl_tetelt_kattint(window, qt_app, "menuFileNewAlbum")
+        assert _varj(
+            qt_app,
+            lambda: (d := window.findChild(QObject, "toolbarNewAlbumPropertiesDialog"))
+            is not None and d.property("opened") is True,
+        ), "a Fájl ▸ Új album… nem nyitotta meg az Album Properties ablakot"
+        assert controller.albums == [], "az album az OK előtt létrejött"
+        _album_ablak_ok(window, qt_app)
 
         assert _varj(
             qt_app, lambda: [a["name"] for a in controller.albums] == ["Untitled"]
@@ -217,14 +237,23 @@ class TestAtnevezesEsMentes:
         )
         _zar_ha_nyitva(window, qt_app, "saveAsFileDialog")
 
-    def test_a_masolat_mentese_valodi_kattintassal_letrehozza_a_001_masolatot(
-        self, fajl_app, qt_app
+    @pytest.mark.parametrize("magassag_elteres", [-5, 0, 5])
+    def test_a_masolat_mentese_tobb_kijelolesnel_a_fokuszban_levo_keprol_keszit_masolatot(
+        self, fajl_app, qt_app, magassag_elteres
     ):
         window, controller, _engine = fajl_app
         _elokeszit(window, qt_app, controller)
-        forras = Path(str(controller.photos.filePathAt(0)))
-        masolat = forras.parent / f"{forras.stem}-001{forras.suffix}"
-        assert not masolat.exists()
+        window.setHeight(window.height() + magassag_elteres)
+        qt_app.processEvents()
+        elso = Path(str(controller.photos.filePathAt(0)))
+        fokuszban = Path(str(controller.photos.filePathAt(1)))
+        elso_masolat = elso.parent / f"{elso.stem}-001{elso.suffix}"
+        fokusz_masolat = fokuszban.parent / f"{fokuszban.stem}-001{fokuszban.suffix}"
+        assert not elso_masolat.exists()
+        assert not fokusz_masolat.exists()
+        _kijelol(window, qt_app, [0, 1])
+        window.setProperty("selectedIndex", 1)
+        qt_app.processEvents()
 
         wait_for_signal(
             controller.saveCopyFinished,
@@ -233,10 +262,18 @@ class TestAtnevezesEsMentes:
             process_events_with=qt_app,
         )
 
-        assert masolat.exists(), (
-            "a Másolat mentése nem írt -001 másolatot a lemezre"
+        assert fokusz_masolat.exists(), (
+            "a Másolat mentése nem írt -001 másolatot a fókuszban lévő képről"
         )
-        assert forras.exists(), "a forrás képet a másolat mentése elvitte"
+        assert not elso_masolat.exists(), (
+            "több kijelölt képnél a fókuszon kívüli képről is készült másolat"
+        )
+        assert len(list(elso.parent.glob("*.jpg"))) == 3, (
+            "a mappa képszáma nem pontosan eggyel nőtt"
+        )
+        assert elso.exists() and fokuszban.exists(), (
+            "a másolat mentése elvitte az egyik forrásképet"
+        )
 
 
 class TestLemezEsTorles:

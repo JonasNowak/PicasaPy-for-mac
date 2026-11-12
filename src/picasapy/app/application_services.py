@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QLibraryInfo, QLocale, QSettings, QTranslator
+from PySide6.QtCore import QLibraryInfo, QLocale, QSettings, QTimer, QTranslator
 from PySide6.QtGui import QGuiApplication
 
 from picasapy.index import open_index
@@ -58,6 +58,43 @@ def wire_fileops(fileops: FileOpsController, controller: AppController) -> None:
 
     fileops.photoRenamed.connect(lambda old, new: refresh(old, new))
     fileops.photoMoved.connect(lambda old, new: refresh(old, new))
+
+    def select_new_folder_when_indexed(folder: str) -> None:
+        from picasapy.index import photos_in_folder
+        from picasapy.paths import normalize_path, path_key
+
+        # az index a mappautat normalize_path alakban tárolja (Windowson a
+        # feloldott, hosszú nevű út), a lekérdezés pontos egyezéssel keres
+        folder = str(normalize_path(folder))
+        # az összevetés kulccsal: Windowson a kis-nagybetű és az útalak eltérhet
+        previous = path_key(controller.currentFolder or "")
+        active = True
+
+        def after_sync() -> None:
+            nonlocal active
+            if not active:
+                return
+            if path_key(controller.currentFolder or "") != previous:
+                active = False
+                controller.syncFinished.disconnect(after_sync)
+                return
+            with open_index(controller._db_path) as conn:
+                ready = bool(photos_in_folder(conn, folder))
+            if ready:
+                active = False
+                controller.syncFinished.disconnect(after_sync)
+                controller.selectFolder(folder)
+                QTimer.singleShot(0, lambda: (
+                    controller.showSelectedFolderToken(folder)
+                    if path_key(controller.currentFolder or "") == path_key(folder)
+                    else None
+                ))
+
+        controller.syncFinished.connect(after_sync)
+        # ha a szinkron a jelzés előtt már lefutott, ne várjunk a következőre
+        QTimer.singleShot(0, controller, after_sync)
+
+    fileops.newFolderMoveFinished.connect(select_new_folder_when_indexed)
     fileops.photoMoveFailed.connect(lambda old, dest: refresh(old, dest))
 
     def torles_utan(path: str) -> None:

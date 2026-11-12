@@ -53,8 +53,19 @@ Column {
         // #1823: a fejléc-gombok a KIJELÖLÉS darabszámát írják ki.
         selectedCount: feed.appWindow && feed.appWindow.selectedIndexes
                        ? feed.appWindow.selectedIndexes.length : 0
+        //: #6871: a csoport csillagozott képeinek száma. A `revision` a
+        //: reaktív trigger (a cellák `info` kötésének mintája): a
+        //: csillagozás és a csillag levétele is növeli, így a gomb
+        //: azonnal követi.
+        starredCount: groupCol.ctl
+            ? (groupCol.ctl.photos.revision,
+               groupCol.ctl.photos.starredCountIn(
+                   groupCol.modelData.start, groupCol.modelData.count))
+            : 0
         hasPendingEdits: feed.appWindow
             ? feed.appWindow.kijelolesbenVanMentetlenSzerkesztes : false
+        hasPendingRotation: feed.appWindow
+            ? feed.appWindow.kijelolesbenVanMentetlenForgatas : false
         // zöld ▸ (#8): a mappa vetítése az első képétől
         onPlayRequested: feed.slideshowRequested(
             groupCol.modelData.start)
@@ -66,20 +77,29 @@ Column {
             if (feed.appWindow && feed.appWindow.selectStarred)
                 feed.appWindow.selectStarred()
         }
-        //: #1006: a fejléc a SAJÁT csoportjának képeiből nyit
-        //: kollázst — nem a kijelölésből és nem a tálcából. Az
-        //: eredeti is a panelhez tartozó halmazzal dolgozik.
+        //: #1006: ha a csoportban van kijelölt kép, a fejléc kollázsa
+        //: azokat adja át; csoporton belüli kijelölés nélkül a teljes
+        //: csoportot használja. A másik mappa kijelölése nem szivárog át.
         onCollageRequested: {
             if (!feed.appWindow || !feed.appWindow.openCollageFromRows)
                 return
-            var sorok = []
             var kezdet = groupCol.modelData.start
-            for (var i = 0; i < groupCol.modelData.count; ++i)
-                sorok.push(kezdet + i)
+            var veg = kezdet + groupCol.modelData.count
+            var sorok = []
+            var kijeloltek = feed.appWindow.selectedIndexes || []
+            for (var i = 0; i < kijeloltek.length; ++i) {
+                var kijeloltSor = Number(kijeloltek[i])
+                if (kijeloltSor >= kezdet && kijeloltSor < veg)
+                    sorok.push(kijeloltSor)
+            }
+            if (sorok.length === 0) {
+                for (var csoportSor = kezdet; csoportSor < veg; ++csoportSor)
+                    sorok.push(csoportSor)
+            }
             feed.appWindow.openCollageFromRows(sorok)
         }
-        //: #4539: a mappa-fejléc film-gombja — a kollázzsal azonos
-        //: halmazt adja át (a csoport sorait), nem a kijelölést.
+        //: #4539: a mappa-fejléc film-gombja mindig az egész csoportot
+        //: adja át, a kijelöléstől függetlenül.
         onMovieRequested: {
             if (!feed.appWindow || !feed.appWindow.openMovieFromRows)
                 return
@@ -88,6 +108,17 @@ Column {
             for (var i = 0; i < groupCol.modelData.count; ++i)
                 sorok.push(kezdet + i)
             feed.appWindow.openMovieFromRows(sorok)
+        }
+        // A mappa feltöltése a csoport minden képével indul; a vezérlő
+        // rögzíti az útvonalakat az OAuth bejelentkezés előtt.
+        onUploadRequested: {
+            if (!feed.ctl || !feed.ctl.uploadGooglePhotosFromHeaderRows)
+                return
+            var sorok = []
+            var kezdet = groupCol.modelData.start
+            for (var i = 0; i < groupCol.modelData.count; ++i)
+                sorok.push(kezdet + i)
+            feed.ctl.uploadGooglePhotosFromHeaderRows(sorok)
         }
         onPersonMovieRequested: {
             if (feed.appWindow && feed.appWindow.openPersonAlbumMovie)

@@ -94,6 +94,52 @@ Item {
         }
     }
 
+    Connections {
+        target: typeof controller !== "undefined" ? controller : null
+        function onCopyAllEffectsNeedsSinglePhoto() {
+            copyAllEffectsInfoDialog.open()
+        }
+    }
+
+    Dialog {
+        id: copyAllEffectsInfoDialog
+        objectName: "copyAllEffectsInfoDialog"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        modal: true
+        //: picasapy-origin: picasa
+        //: picasapy-origin-key: stringres:ytApp::InfoTitle
+        title: qsTr("Info")
+        standardButtons: Dialog.Ok
+        // #1599/#1748: rögzített szélesség, különben a tördelő címke és a
+        // Dialog implicitWidth-je kötési hurokba fut Fusion stílussal
+        implicitWidth: 400
+
+        // #6864: az eredeti Info ablakában a szöveg előtt kék „i” ikon áll
+        readonly property string iconType: "info"
+
+        contentItem: Row {
+            spacing: 12
+            Image {
+                objectName: "copyAllEffectsInfoIcon"
+                anchors.verticalCenter: parent.verticalCenter
+                source: "icons/dialog-info.svg"
+                sourceSize: Qt.size(32, 32)
+                width: 32
+                height: 32
+            }
+            Label {
+                objectName: "copyAllEffectsInfoText"
+                width: 316
+                anchors.verticalCenter: parent.verticalCenter
+                wrapMode: Text.WordWrap
+                //: picasapy-origin: picasa
+                //: picasapy-origin-key: stringres:IDS_SELECT_ONE_ONLY
+                text: qsTr("Please select a single picture to copy the effects from.")
+            }
+        }
+    }
+
     // exportálás mappába (#16, Ctrl+Shift+S; ExportDialogs.qml, #150)
     // #1720: halasztott példányosítás — a párbeszéd csak az első
     // megnyitáskor épül fel (ld. `DeferredDialog.qml`).
