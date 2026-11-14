@@ -88,7 +88,8 @@ TimelineView {
 
     function closeTimeline() {
         var collection = timeline.collectionAt(timeline.currentIndex)
-        if (collection)
+        // A virtuális friss album a Picasában nem váltja át a főnézetet.
+        if (collection && collection.albumToken !== "]updated")
             timeline.selectTimelineCollection(collection)
         hostWindow.timelineOpen = false
     }
@@ -114,12 +115,16 @@ TimelineView {
         if (!collectionModel || collectionModel.rowCount() <= 0)
             return
         timeline.selectTimelineCollection(collection)
+        // Mappakártya vetítéséből kilépve csak a mappa marad kijelölve (#6909).
+        if (collection.kind !== "album")
+            hostWindow.clearSelection()
         hostWindow.timelineOpen = false
         hostWindow.timelineSlideshowModel = collectionModel
         hostWindow.timelineSlideshowActive = true
+        hostWindow.ensureSlideshow()._timelineCollectionName = collection.name
         hostWindow.visibilityBeforeSlideshow = hostWindow.visibility
         hostWindow.visibility = Window.FullScreen
-        hostWindow.startSlideshow(0)
+        hostWindow.startSlideshow(0, true)
         if (!hostWindow.slideshowRunning)
             hostWindow.exitSlideshow()
     }

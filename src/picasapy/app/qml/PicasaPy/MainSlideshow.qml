@@ -57,7 +57,7 @@ SlideshowView {
         }
     }
 
-    function startSlideshow(fromIndex) {
+    function startSlideshow(fromIndex, paused) {
         var index = fromIndex
         if (index < 0)
             index = hostWindow.viewerOpen && hostPhotoViewer
@@ -65,7 +65,7 @@ SlideshowView {
                                           : Math.max(0, hostWindow.selectedIndex)
         hostWindow.visibilityBeforeSlideshow = hostWindow.visibility
         hostWindow.visibility = Window.FullScreen
-        slideshow.start(index)
+        slideshow.start(index, paused)
         if (!slideshow.visible)   // nincs vetíthető fotó — állítsuk vissza
             exitSlideshow()
     }
@@ -81,6 +81,12 @@ SlideshowView {
         slideshow.startScreensaver()
         if (!slideshow.visible)
             exitSlideshow()
+    }
+
+    function slideshowDissolveAlpha(elapsedSeconds, slideSeconds) {
+        if (typeof controller === "undefined" || !controller)
+            return 0
+        return controller.slideshowDissolveAlpha(elapsedSeconds, slideSeconds)
     }
 
     function exitSlideshow() {
@@ -137,7 +143,14 @@ SlideshowView {
         : slideshow.screensaverMode ? controller.screensaverEffect
         : controller.slideshowTransition
     transitionMs: (typeof controller !== "undefined" && controller)
-        ? controller.slideshowTransitionMs : 700
+        ? controller.slideshowOtherTransitionMs : 500
+    dissolveTransitionMs: (typeof controller !== "undefined" && controller)
+        ? (slideshow.screensaverMode
+            ? Math.round(1000 * slideshow.seconds / 1.5)
+            : controller.slideshowTransitionMs)
+        : Math.round(1000 * slideshow.seconds / 1.5)
+    dissolveAlphaProvider: typeof controller === "undefined" || !controller
+        ? null : slideshow
     captionMode: typeof controller === "undefined" || !controller
         ? "caption"
         : slideshow.screensaverMode

@@ -7,6 +7,18 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 
 ## [Nem kiadott]
 
+## [1.0.112] - 2026-11-14
+
+- Az Időrend az EXIF nélküli képekhez a rögzített fájlidőt használja, a Recently Updated dátumát megnyitáskor, az albumét pedig első tagságkor rögzíti (#6914).
+
+## [1.0.111] - 2026-11-14
+
+- Az Időrenden a Space szüneteltetett vetítést nyit, egy mappa vetítéséből Escape-pel kilépve csak a mappa marad kijelölve, a Ctrl+Space pedig hatástalan (#6909).
+
+## [1.0.110] - 2026-11-14
+
+- Az Időrend a „Recently Updated” kártyát is megjeleníti, húzás közben frissíti a feliratot, a nyilakkal léptet, Escape-re pedig kijelöli a fókuszált mappát és első képét, kivéve a „Recently Updated” kártyát, amelynél megmarad a korábbi nézet (#6902).
+
 ## [1.0.109] - 2026-11-13
 
 - A háttérmunkák lezárása és hibajelzése a főszálon fut, így a háttérszál nem okoz összeomlást a szemétgyűjtés közben (#6858).
