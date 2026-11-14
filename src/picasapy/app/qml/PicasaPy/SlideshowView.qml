@@ -33,6 +33,8 @@ Rectangle {
     //: vár címkártyát; a beállított fotóátmenet ettől nem változik.
     property bool _cimkartyaFuggo: false
     property bool _cimkartyaFeluszas: false
+    //: #6933: Space-szünetkor a vezérlősáv áttűnés nélkül váltson állapotot.
+    property bool _spacePauseControls: false
     property string _timelineCollectionName: ""
     readonly property string _atmenetTipus:
         _cimkartyaFeluszas ? "dissolve" : transitionKind
@@ -102,8 +104,9 @@ Rectangle {
     signal secondsChosen(int masodperc)
     //: a nem-Dissolve átmenetek korábbi hossza; a Dissolve saját időt kap
     property int transitionMs: 700
-    //: #6920: a Dissolve külön, T/1,5 hosszú; a többi átmenet a transitionMs-t
-    //: használja, hogy az időzítése változatlan maradjon.
+    //: #6935: normál vetítésben a Dissolve fix 1000 ms; az Időrend és a
+    //: címkártya felúszása a #6920 szerinti T/1,5 időt tartja. A többi
+    //: átmenet a transitionMs-t használja.
     property int dissolveTransitionMs: 2000
     property var dissolveAlphaProvider: null
     property real dissolveProgress: 0.0
@@ -217,6 +220,7 @@ Rectangle {
     function start(index, paused) {
         screensaverMode = false
         screensaverInputArmed = false
+        _spacePauseControls = false
         slideshowTiming.inputArmTimer.stop()
         var target = clampToPhoto(index)
         if (target < 0) return   // nincs vetíthető fotó
@@ -263,6 +267,7 @@ Rectangle {
         var wasScreensaver = screensaverMode
         slideshowTiming.inputArmTimer.stop()
         screensaverInputArmed = false
+        _spacePauseControls = false
         playing = false
         visible = false
         show.closed()
@@ -438,7 +443,22 @@ Rectangle {
     }
 
     function togglePause() {
-        playing = !playing
+        var resumes = !playing
+        if (!timelineSlideshow) {
+            if (resumes) {
+                // Előbb a rejtett állapotot állítjuk be, amíg az azonnali
+                // átmenetjelző aktív; így a folytatás nem futtat 1200 ms-os
+                // elhalványulást.
+                slideshowControls.controls.shown = false
+                slideshowControls.autoHideTimer.stop()
+                _spacePauseControls = false
+            } else {
+                _spacePauseControls = true
+                slideshowControls.controls.shown = true
+                slideshowControls.autoHideTimer.stop()
+            }
+        }
+        playing = resumes
         if (playing && _cimkartyaFuggo) {
             _cimkartyaFuggo = false
             show._felusztat()
@@ -513,13 +533,19 @@ Rectangle {
     }
 
     function _dissolveOpacitasFrissit() {
-        if (!show._gorbesDissolve)
+        if (show._atmenetTipus !== "dissolve")
             return
-        var alpha256 = show.dissolveAlphaProvider
-                ? show.dissolveAlphaProvider.slideshowDissolveAlpha(
-                    show.dissolveProgress * show.seconds / 1.5,
-                    show.seconds)
-                : Math.floor(256 * show.dissolveProgress)
+        var alpha256
+        if (show._gorbesDissolve) {
+            alpha256 = show.dissolveAlphaProvider
+                    ? show.dissolveAlphaProvider.slideshowDissolveAlpha(
+                        show.dissolveProgress * show.seconds / 1.5,
+                        show.seconds)
+                    : Math.floor(256 * show.dissolveProgress)
+        } else {
+            alpha256 = Math.round(
+                256 * Math.max(0, Math.min(show.dissolveProgress, 1)))
+        }
         var alpha = alpha256 / 256.0
         imageLayer.currentImage.opacity = alpha
     }
@@ -606,11 +632,11 @@ Rectangle {
         } else if (show._atmenetTipus === "timelapse") {
             imageLayer.currentImage.scale = 1.16
             imageLayer.currentImage.opacity = 0
-        } else if (show._gorbesDissolve) {
+        } else if (show._atmenetTipus === "dissolve") {
             show.dissolveProgress = 0.0
             show._dissolveOpacitasFrissit()
         } else {
-            imageLayer.currentImage.opacity = show._atmenetTipus === "dissolve" ? 0 : 1
+            imageLayer.currentImage.opacity = 1
         }
         imageLayer.veil.color = show.transitionKind === "dissolvewhite"
             ? "#ffffff" : "#000000"
