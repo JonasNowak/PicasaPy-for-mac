@@ -20458,6 +20458,13 @@ Are you sure you want to undo?</source>
     <context>
         <name>MainErrorBanner</name>
         <message>
+            <location filename="../qml/PicasaPy/MainErrorBanner.qml" line="84" />
+            <source>Skipped</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:RestoreProc::skipped</extracomment>
+            <translation>Прескочено</translation>
+        </message>
+        <message>
             <location filename="../qml/PicasaPy/MainErrorBanner.qml" line="146" />
             <source>A hidden folder cannot be moved into a collection. Unhide it first.</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
@@ -21291,6 +21298,33 @@ picasapy-origin-key: stringres:Sort::ID_REVERSESORT;stringres:eMenuLabelFolder::
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:Album::ID_ALBUM_FILTERFACES</extracomment>
             <translation>&amp;Додај ознаке са именом</translation>
+        </message>
+    </context>
+    <context>
+        <name>ImmediateDeleteDialog</name>
+        <message>
+            <location filename="../qml/PicasaPy/ImmediateDeleteDialog.qml" line="25" />
+            <source>Delete Items</source>
+            <extracomment>DeleteMessage::DeleteItemsTitle
+picasapy-origin: picasa
+picasapy-origin-key: stringres:DeleteMessage::DeleteItemsTitle</extracomment>
+            <translation>Избриши ставке</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/ImmediateDeleteDialog.qml" line="27" />
+            <source>Delete</source>
+            <extracomment>CThumbUI::ConfirmImmediateDeletion::Delete
+picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::ConfirmImmediateDeletion::Delete</extracomment>
+            <translation>Избриши</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/ImmediateDeleteDialog.qml" line="51" />
+            <source>This file cannot be moved to the Trash and will be deleted immediately. Are you sure you want to continue?</source>
+            <extracomment>CThumbUI::ConfirmImmediateDeletion::Message
+picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::ConfirmImmediateDeletion::Message</extracomment>
+            <translation>Ова датотека не може да се премести у отпад и одмах ће бити избрисана. Да ли стварно желите да наставите?</translation>
         </message>
     </context>
 </TS>
