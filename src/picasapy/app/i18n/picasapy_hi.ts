@@ -7724,6 +7724,14 @@ picasapy-origin-key: stringres:RestoreDialog::cantlaunch</extracomment>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>पहले कम-से-कम एक तस्वीर चुनें.</translation>
         </message>
+        <message>
+            <source>The images in the folder have been deleted, but the folder itself will not
+be deleted due to the presence of additional files and/or folders.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CANT_DELETE_FOLDER</extracomment>
+            <translation>फ़ोल्डर की छवियों को हटा दिया गया है, लेकिन स्वयं फ़ोल्डर 
+be अतिरिक्त फ़ाइलों और/या फ़ोल्डर की उपस्थिति के कारण नहीं हटेगा.</translation>
+        </message>
     </context>
     <context>
         <name>FolderPane</name>
@@ -7948,10 +7956,11 @@ picasapy-origin-key: stringres:il_Cancel</extracomment>
             <translation>फ़ोल्डर ले जाएं</translation>
         </message>
         <message>
-            <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="233" />
-            <source>Browse for Folder</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>फ़ोल्डर के लिए ब्राउज़ करें</translation>
+            <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="298" />
+            <source>Move Folder to %1</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFolderFormat</extracomment>
+            <translation>फ़ोल्डर को %1 में ले जाएं</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="237" />
@@ -10774,19 +10783,22 @@ picasapy-origin-key: tooltips:Label(editpanel/in_progress_label)</extracomment>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="532" />
             <source>Make a caption!</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>कैप्शन बनाएं!</translation>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CTextCaptionNode::defname</extracomment>
+            <translation>कोई कैप्शन बनाएं!</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="550" />
             <source>Delete this caption</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>यह कैप्शन हटाएं</translation>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/captiontrash)</extracomment>
+            <translation>इस कैप्शन को हटाएं</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="627" />
             <source>Show/Hide Caption</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/captionbutton)</extracomment>
             <translation>कैप्शन दिखाएं/छुपाएं</translation>
         </message>
         <message>
@@ -10795,6 +10807,24 @@ picasapy-origin-key: tooltips:Label(editpanel/in_progress_label)</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: tooltips:Tooltip(editpanel/toggle_left_drawer)</extracomment>
             <translation>संपादन नियंत्रण दिखाएं/छुपाएं</translation>
+        </message>
+        <message>
+            <source>Confirm</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:ytApp::ConfirmTitle</extracomment>
+            <translation>दुबारा पूछें</translation>
+        </message>
+        <message>
+            <source>Are you sure you want to delete the caption for this image?</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CONFIRM_CAPTION_TRASH</extracomment>
+            <translation>क्या आप वाकई इस चित्र के कैप्शन को हटाना चाहते हैं?</translation>
+        </message>
+        <message>
+            <source>Delete Caption</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CONFIRM_CAPTION_YES_BUTTON</extracomment>
+            <translation>कैप्शन हटाएं</translation>
         </message>
     </context>
     <context>
@@ -10839,11 +10869,17 @@ picasapy-origin-key: acquirepanel_text:Tooltip(acquirepanel/previousbutton)</ext
             <translation>पिछला फ़ोटो</translation>
         </message>
         <message>
-            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="100" />
-            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="101" />
+            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="110" />
             <source>Play Slideshow</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>स्लाइड शो चलाएँ</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="111" />
+            <source>Watch a slideshow of these photos</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/sbutton)</extracomment>
+            <translation>इन फ़ोटो का एक स्लाइड शो देखें</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="116" />
@@ -10980,7 +11016,13 @@ picasapy-origin-key: tooltips:Label(editpanel/sbutton)</extracomment>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="200" />
-            <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="247" />
+            <source>Watch a slideshow of these photos</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/sbutton)</extracomment>
+            <translation>इन फ़ोटो का एक स्लाइड शो देखें</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="252" />
             <source>Play Slideshow</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>स्लाइड शो चलाएँ</translation>
@@ -11567,21 +11609,6 @@ picasapy-origin-key: stringres:eMenuHelp::ID_HELP_KEYBOARD_SHORTCUTS</extracomme
             <source>TEST MODE — logging startup</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>परीक्षण मोड — स्टार्टअप लॉगिंग</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="71" />
-            <source>Are you sure you want to replace the existing caption with the contents of the clipboard?
-(This operation is not undoable)</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>क्या आप वाकई मौजूदा कैप्शन को क्लिपबोर्ड की सामग्री से बदलना चाहते हैं?
-(यह कार्रवाई पूर्ववत नहीं की जा सकती)</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="85" />
-            <source>Replace</source>
-            <extracomment>picasapy-origin: picasa
-picasapy-origin-key: stringres:CDGo::ReplaceButton;stringres:CTextEditNode::confirmyesbutton;stringres:RestoreProc::replace</extracomment>
-            <translation>प्रतिस्थापित करें</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="91" />
@@ -13062,6 +13089,13 @@ picasapy-origin-key: stringres:PropertiesPanel::edit_keywords</extracomment>
 picasapy-origin: picasa
 picasapy-origin-key: stringres:IDS_KEYWORD_PREFS</extracomment>
             <translation>कीवर्ड</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PropertiesPanel.qml" />
+            <source>Adjust &amp;Date and Time...</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:eMenuTools::ID_TOOLS_ADJUST_TIMESTAMP</extracomment>
+            <translation>&amp;तिथि और समय एडजस्ट करें...</translation>
         </message>
     </context>
     <context>

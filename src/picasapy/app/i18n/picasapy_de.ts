@@ -7733,6 +7733,14 @@ picasapy-origin-key: stringres:RestoreDialog::cantlaunch</extracomment>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Wählen Sie zuerst mindestens ein Bild aus.</translation>
         </message>
+        <message>
+            <source>The images in the folder have been deleted, but the folder itself will not
+be deleted due to the presence of additional files and/or folders.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CANT_DELETE_FOLDER</extracomment>
+            <translation>Die Bilder im Ordner wurden gelöscht, aber der Ordner selbst wird nicht 
+gelöscht, da noch zusätzliche Dateien und/oder Ordner vorhanden sind.</translation>
+        </message>
     </context>
     <context>
         <name>FolderPane</name>
@@ -7957,10 +7965,11 @@ picasapy-origin-key: stringres:il_Cancel</extracomment>
             <translation>Ordner verschieben</translation>
         </message>
         <message>
-            <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="233" />
-            <source>Browse for Folder</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>Ordner suchen</translation>
+            <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="298" />
+            <source>Move Folder to %1</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFolderFormat</extracomment>
+            <translation>Ordner nach %1 verschieben</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="237" />
@@ -10789,20 +10798,23 @@ picasapy-origin-key: tooltips:Label(editpanel/in_progress_label)</extracomment>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="532" />
             <source>Make a caption!</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>Bildunterschrift hinzufügen!</translation>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CTextCaptionNode::defname</extracomment>
+            <translation>Bildunterschrift eingeben</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="550" />
             <source>Delete this caption</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/captiontrash)</extracomment>
             <translation>Diese Bildunterschrift löschen</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="627" />
             <source>Show/Hide Caption</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>Bildunterschrift ein-/ausblenden</translation>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/captionbutton)</extracomment>
+            <translation>Bildunterschrift einblenden/ausblenden</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="683" />
@@ -10810,6 +10822,24 @@ picasapy-origin-key: tooltips:Label(editpanel/in_progress_label)</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: tooltips:Tooltip(editpanel/toggle_left_drawer)</extracomment>
             <translation>Steuerelemente zum Bearbeiten anzeigen/ausblenden</translation>
+        </message>
+        <message>
+            <source>Confirm</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:ytApp::ConfirmTitle</extracomment>
+            <translation>Bestätigen</translation>
+        </message>
+        <message>
+            <source>Are you sure you want to delete the caption for this image?</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CONFIRM_CAPTION_TRASH</extracomment>
+            <translation>Möchten Sie wirklich die Bildunterschrift dieses Bildes löschen?</translation>
+        </message>
+        <message>
+            <source>Delete Caption</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CONFIRM_CAPTION_YES_BUTTON</extracomment>
+            <translation>Bildunterschrift löschen</translation>
         </message>
     </context>
     <context>
@@ -10854,11 +10884,17 @@ picasapy-origin-key: acquirepanel_text:Tooltip(acquirepanel/previousbutton)</ext
             <translation>Vorheriges Foto</translation>
         </message>
         <message>
-            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="100" />
-            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="101" />
+            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="110" />
             <source>Play Slideshow</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Diashow abspielen</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="111" />
+            <source>Watch a slideshow of these photos</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/sbutton)</extracomment>
+            <translation>Diashow mit diesen Fotos anschauen</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="116" />
@@ -10995,7 +11031,13 @@ picasapy-origin-key: tooltips:Label(editpanel/sbutton)</extracomment>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="200" />
-            <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="247" />
+            <source>Watch a slideshow of these photos</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/sbutton)</extracomment>
+            <translation>Diashow mit diesen Fotos anschauen</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="252" />
             <source>Play Slideshow</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Diashow abspielen</translation>
@@ -11582,21 +11624,6 @@ picasapy-origin-key: stringres:eMenuHelp::ID_HELP_KEYBOARD_SHORTCUTS</extracomme
             <source>TEST MODE — logging startup</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>TESTMODUS — Startvorgang wird protokolliert</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="71" />
-            <source>Are you sure you want to replace the existing caption with the contents of the clipboard?
-(This operation is not undoable)</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>Möchten Sie die vorhandene Bildunterschrift wirklich durch den Inhalt der Zwischenablage ersetzen?
-(Dieser Vorgang kann nicht rückgängig gemacht werden.)</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="85" />
-            <source>Replace</source>
-            <extracomment>picasapy-origin: picasa
-picasapy-origin-key: stringres:CDGo::ReplaceButton;stringres:CTextEditNode::confirmyesbutton;stringres:RestoreProc::replace</extracomment>
-            <translation>Ersetzen</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="91" />
@@ -13077,6 +13104,13 @@ picasapy-origin-key: stringres:PropertiesPanel::edit_keywords</extracomment>
 picasapy-origin: picasa
 picasapy-origin-key: stringres:IDS_KEYWORD_PREFS</extracomment>
             <translation>Stichwörter</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PropertiesPanel.qml" />
+            <source>Adjust &amp;Date and Time...</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:eMenuTools::ID_TOOLS_ADJUST_TIMESTAMP</extracomment>
+            <translation>&amp;Datum und Uhrzeit anpassen...</translation>
         </message>
     </context>
     <context>

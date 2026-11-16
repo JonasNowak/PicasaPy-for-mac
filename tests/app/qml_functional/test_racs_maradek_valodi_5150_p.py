@@ -5,8 +5,8 @@ Lefedve (az audit „Rács" csoportjából):
 - Mappalista és rács üres része: jobbklikk nyitja a menüt; a mappasor
   balklikkje kiválasztja a mappát; a lasszó húzással jelöl.
 - Fejléc és mappa-tulajdonságok: a Sync to Web kapcsoló letiltott; a naptár-gomb
-  megnyitja a naptárat; a zene-útvonal valódi bevitellel mentődik; a helyszín-mező
-  mappa módban zárt.
+  megnyitja a naptárat; a zene-útvonal valódi bevitellel mentődik; a hely mező
+  mappa módban szerkeszthető.
 - Mentés-sor: a mentetlen mappa pipája a sor kattintására kapcsol.
 - Fotó-menü: View and Edit, Rotate Clockwise, Locate on Disk, Save,
   Add to Album, Add to People Album, Locate in Picasa, és a Locate almenü.
@@ -318,17 +318,17 @@ class TestMappaTulajdonsagai:
             f"a zene-útvonal nem mentődött a mappához: {_mappa_zene(cel)}"
         )
 
-    def test_a_helyszin_mezo_mappa_modban_nem_szerkesztheto(self, mappa_app, qt_app):
+    def test_a_hely_mezo_mappa_modban_szerkesztheto(self, mappa_app, qt_app):
         window, controller, _motor = mappa_app
         cel = elokeszit_str(window, qt_app, controller)
         dialog = _tulajdonsagok_nyitasa(window, qt_app, cel)
         mezo = keres(window, "folderPropertiesLocation")
-        assert mezo.property("enabled") is False, "a helyszín-mező mappa módban szerkeszthető"
+        assert mezo.property("enabled") is True, "a hely mező mappa módban nem szerkeszthető"
 
         kattint(window, qt_app, "folderPropertiesLocation")
 
-        assert mezo.property("activeFocus") is False, (
-            "a letiltott helyszín-mező kattintásra fókuszt kapott"
+        assert mezo.property("activeFocus") is True, (
+            "a szerkeszthető hely mező kattintásra nem kapott fókuszt"
         )
         zar(qt_app, dialog)
 
@@ -478,17 +478,11 @@ class TestGyorsCimkeBeallitas:
         )
         zar(qt_app, dialog)
 
-    def test_az_automatikus_kitoltes_jelolo_valodi_kattintassal_bekapcsol(self, qml_app, qt_app):
+    def test_az_autofill_gomb_letiltott_jelolt_nelkul(self, qml_app, qt_app):
         window, controller, _engine = qml_app
         dialog = self._megnyitas(window, qt_app)
-        jelolo = keres(window, "quickTagsAutoFillCheck")
-        assert jelolo.property("checked") is False
-
-        kattint(window, qt_app, "quickTagsAutoFillCheck")
-
-        assert varj(qt_app, lambda: controller.quickTagsAutoFillFrequent is True), (
-            "az automatikus kitöltés jelölő kattintása nem kapcsolta be a beállítást"
-        )
+        gomb = keres(window, "quickTagsAutoFillButton")
+        assert gomb.property("enabled") is False
         zar(qt_app, dialog)
 
 

@@ -173,12 +173,12 @@ class KeywordsMixin:
         """A jogosultság menet közben változhat (csatolás, hálózati kötet)."""
         self._irhatosag_gyorstar = {}
 
-    @Slot(list, str)
-    def addKeywordToRows(self, rows, keyword: str) -> None:
+    @Slot(list, str, result=bool)
+    def addKeywordToRows(self, rows, keyword: str) -> bool:
         """Címke hozzáadása; az előzményt csak aktív Legutóbbiak mellett frissíti."""
         keyword = _clean_keyword(keyword)
         if not keyword:
-            return
+            return True
         if self.quickTagsReserveRecent:
             self._record_recent_quick_tag(keyword)
 
@@ -187,7 +187,7 @@ class KeywordsMixin:
                 return keywords
             return (*keywords, keyword)
 
-        self._apply_keywords(rows, transform)
+        return self._apply_keywords(rows, transform)
 
     @Slot(list, str)
     def removeKeywordFromRows(self, rows, keyword: str) -> None:
@@ -201,7 +201,7 @@ class KeywordsMixin:
 
         self._apply_keywords(rows, transform)
 
-    def _apply_keywords(self, rows, transform) -> None:
+    def _apply_keywords(self, rows, transform) -> bool:
         """Kulcsszó-módosítás a sorokra — Picasa írási szabály: JPEG-nél az
         IPTC Keywords (2:25) a tár (sikertelen írásnál defenzív ini-
         fallback), más formátumnál a .picasa.ini `keywords=` CSV kulcsa.
@@ -209,6 +209,7 @@ class KeywordsMixin:
         photos = self._photos.photos
         valid = [photos[int(r)] for r in rows if 0 <= int(r) < len(photos)]
         by_folder: dict[str, list] = {}
+        success = True
         for photo in valid:
             by_folder.setdefault(photo.folder_path, []).append(photo)
         for folder, folder_photos in by_folder.items():
@@ -268,12 +269,14 @@ class KeywordsMixin:
                     update_document(ini_path, mutate, backup=True)
                 except _WRITE_ERRORS as error:
                     self.jelentsdAzIrasiHibat(error)
+                    success = False
                     break
                 if iptc_errors:
                     self.jelentsdAzIrasiHibat(iptc_errors[0])
             with open_index(self._db_path) as conn:
                 self._sync_tree(conn, folder)
         self._refresh_view()
+        return success
 
     # -- Gyorscímkék (#193) --------------------------------------------------
 
@@ -282,11 +285,52 @@ class KeywordsMixin:
         elemű listaként (hiányzó/hibás mentésnél üres string tölti ki).
 
         #1788: ez a feltöltés a MIGRÁCIÓ maga — a nyolc elemre mentett
-        beállítás tíz mezős felületen is hiánytalanul megjelenik."""
+        beállítás tíz mezős felületen is hiánytalanul megjelenik.
+
+        #7053: a régi tartós Autofill-kapcsoló első használatakor az addig
+        megjelenített címkéket mentett mezőértékké alakítjuk, majd eltávolítjuk
+        a régi beállítást."""
+        self._migrate_legacy_quick_tag_autofill()
+        return self._stored_quick_tag_labels()
+
+    def _stored_quick_tag_labels(self) -> list[str]:
+        """A mentett mezők normalizálása a tízhelyes aktuális alakra."""
         stored = _as_str_list(self._get_settings().value(_KEY_QUICK_LABELS))
         labels = [_clean_keyword(v) for v in stored[:_QUICK_TAG_SLOTS]]
         labels += [""] * (_QUICK_TAG_SLOTS - len(labels))
         return labels
+
+    def _migrate_legacy_quick_tag_autofill(self) -> None:
+        """A korábbi tartós autofill egyszer kiszámolt gombjait elmenti.
+
+        A hívás a gyorscímke-mezők első olvasásakor történik, amikor az index
+        és a QSettings már elérhető. Kikapcsolt régi beállításnál csak a
+        megszűnt kulcsot távolítja el.
+        """
+        settings = self._get_settings()
+        if not settings.contains(_KEY_QUICK_AUTOFILL):
+            return
+
+        if _as_bool(settings.value(_KEY_QUICK_AUTOFILL), False):
+            labels = self._stored_quick_tag_labels()
+            if self.quickTagsReserveRecent:
+                recent = self._quick_tag_recent()
+                for index in range(_QUICK_TAG_RESERVED):
+                    if index < len(recent):
+                        labels[index] = recent[index]
+            if "" in labels:
+                used = {label.casefold() for label in labels if label}
+                for candidate in self._legacy_frequent_keywords():
+                    if "" not in labels:
+                        break
+                    folded = candidate.casefold()
+                    if folded in used:
+                        continue
+                    labels[labels.index("")] = candidate
+                    used.add(folded)
+            settings.setValue(_KEY_QUICK_LABELS, labels)
+
+        settings.remove(_KEY_QUICK_AUTOFILL)
 
     def _quick_tag_recent(self) -> list[str]:
         """A két legutóbb használt címke, legfrissebb elöl."""
@@ -301,8 +345,7 @@ class KeywordsMixin:
         settings = self._get_settings()
         stored_recent = _as_str_list(settings.value(_KEY_QUICK_RECENT))
         recent = stored_recent[:_QUICK_TAG_RECENT_LIMIT]
-        folded = keyword.casefold()
-        if any(item.casefold() == folded for item in recent):
+        if keyword in recent:
             # A korábbi, nyolcelemű beállítást is két helyre szűkítjük, de
             # meglévő recent ismétlésénél a sorrend változatlan marad.
             if stored_recent != recent:
@@ -315,11 +358,8 @@ class KeywordsMixin:
         )
         self.quickTagsChanged.emit()
 
-    def _frequent_keywords(self) -> list[str]:
-        """Az egész könyvtár címkéi gyakoriság szerint csökkenő sorrendben
-        (holtverseny: ábécérend) — a „gyakori címkék" automatikus
-        kitöltéshez (#193). A teljes indexet olvassa, nem csak az aktuális
-        nézetet."""
+    def _legacy_frequent_keywords(self) -> list[str]:
+        """A régi tartós kapcsoló egyetlen, migrációs számításához."""
         counts: dict[str, list] = {}  # casefold -> [megjelenő alak, darab]
         with open_index(self._db_path) as conn:
             for record in all_photos(conn):
@@ -361,37 +401,108 @@ class KeywordsMixin:
         self._get_settings().setValue(_KEY_QUICK_RESERVE_RECENT, bool(value))
         self.quickTagsChanged.emit()
 
-    @Property(bool, notify=quickTagsChanged)
-    def quickTagsAutoFillFrequent(self) -> bool:
-        """Be van-e kapcsolva: az üres szlotok gyakori címkékkel
-        töltődnek ki automatikusan (alapértelmezetten KI)."""
-        return _as_bool(self._get_settings().value(_KEY_QUICK_AUTOFILL), False)
-
-    @Slot(bool)
-    def setQuickTagsAutoFillFrequent(self, value: bool) -> None:
-        self._get_settings().setValue(_KEY_QUICK_AUTOFILL, bool(value))
-        self.quickTagsChanged.emit()
-
     @Property(list, notify=quickTagsChanged)
     def quickTagButtons(self) -> list:
-        """A ténylegesen megjelenő tíz gombcímke (#193, #1788): a kézzel beállított
-        szlotok, a felső 2 helyén — ha a kapcsoló BE — a legutóbb használt
-        címkékkel felülírva, majd (ha a gyakori-kitöltés BE) az üresen
-        maradt szlotok a leggyakrabban használt, még nem szereplő
-        címkékkel feltöltve. Üres szlot = "" (a QML mutatja „?"-ként)."""
+        """A mentett mezők és a legutóbbi értékekből kirajzolt gombok.
+
+        Gyakori címkét a gombok olvasása nem számol. Ha egy fenntartott
+        recent helyhez még nincs előzmény, a mentett mező látszik alatta.
+        Üres szlot = "" (a QML mutatja „?"-ként).
+        """
         labels = self._quick_tag_raw_labels()
         if self.quickTagsReserveRecent:
             recent = self._quick_tag_recent()
             for i in range(_QUICK_TAG_RESERVED):
-                labels[i] = recent[i] if i < len(recent) else ""
-        if self.quickTagsAutoFillFrequent and "" in labels:
-            used = {label.casefold() for label in labels if label}
-            for candidate in self._frequent_keywords():
-                if "" not in labels:
-                    break
-                folded = candidate.casefold()
-                if folded in used:
-                    continue
-                labels[labels.index("")] = candidate
-                used.add(folded)
+                if i < len(recent):
+                    labels[i] = recent[i]
+        return labels
+
+    def _quick_tag_autofill_candidates(self) -> list[str]:
+        """Könyvtári címkék első indexbeli előfordulás szerint, max. 100.
+
+        Az eredeti soros deduplikálást bájtra pontosan közelítjük Python
+        sztring-egyezéssel; kis/nagybetűt és Unicode-normalizálást nem vonunk
+        össze. Az `all_photos` sorrendje a jegyben rögzített rekord-bejárási
+        közelítés.
+        """
+        recent = set(self._quick_tag_recent())
+        seen: set[str] = set()
+        candidates: list[str] = []
+        with open_index(self._db_path) as conn:
+            for record in all_photos(conn):
+                for keyword in _split_keywords(record.keywords):
+                    if keyword in seen:
+                        continue
+                    seen.add(keyword)
+                    if keyword in recent:
+                        continue
+                    candidates.append(keyword)
+                    if len(candidates) == 100:
+                        return candidates
+        return candidates
+
+    @Property(bool, notify=quickTagsChanged)
+    def quickTagAutofillAvailable(self) -> bool:
+        """Van-e legalább egy könyvtári címke az Autofill számára."""
+        candidates = getattr(self, "_quick_tag_autofill_candidates_cache", None)
+        if candidates is None:
+            candidates = self._quick_tag_autofill_candidates()
+            self._quick_tag_autofill_candidates_cache = candidates
+        return bool(candidates)
+
+    @Slot()
+    def beginQuickTagAutofill(self) -> None:
+        """A konfigurációs ablak nyitásakor frissíti a jelöltlistát."""
+        self._quick_tag_autofill_candidates_cache = (
+            self._quick_tag_autofill_candidates()
+        )
+        self._quick_tag_autofill_loaded: list[str] = []
+        self.quickTagsChanged.emit()
+
+    @Slot(list, result=list)
+    def autofillQuickTagLabels(self, current_labels) -> list:
+        """Egyszer kitölti az üres mezőket, és ablakonként kihagyja a már
+        betöltött jelölteket.
+
+        A nem üres, szóközlevágás után is tartalmas mező érintetlen marad és
+        nem fogyaszt jelöltet. Fenntartott recent hely esetén a 0. és 1.
+        mezőt nem vizsgálja írásra.
+        """
+        labels = [str(value) for value in current_labels[:_QUICK_TAG_SLOTS]]
+        labels += [""] * (_QUICK_TAG_SLOTS - len(labels))
+        first_slot = _QUICK_TAG_RESERVED if self.quickTagsReserveRecent else 0
+        loaded = getattr(self, "_quick_tag_autofill_loaded", [])
+        candidates = getattr(self, "_quick_tag_autofill_candidates_cache", None)
+        if candidates is None:
+            candidates = self._quick_tag_autofill_candidates()
+            self._quick_tag_autofill_candidates_cache = candidates
+        existing = set(labels)
+        filled_slots: list[int] = []
+
+        for slot in range(first_slot, _QUICK_TAG_SLOTS):
+            if labels[slot].strip():
+                continue
+            candidate = next(
+                (
+                    value
+                    for value in candidates
+                    if value not in existing and value not in loaded
+                ),
+                None,
+            )
+            if candidate is None:
+                break
+            labels[slot] = candidate
+            existing.add(candidate)
+            loaded.append(candidate)
+            filled_slots.append(slot)
+
+        if filled_slots:
+            saved = self._quick_tag_raw_labels()
+            for slot in filled_slots:
+                saved[slot] = labels[slot]
+            self._get_settings().setValue(_KEY_QUICK_LABELS, saved)
+            self.quickTagsChanged.emit()
+
+        self._quick_tag_autofill_loaded = loaded
         return labels

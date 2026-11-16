@@ -7769,6 +7769,14 @@ picasapy-origin-key: stringres:RestoreDialog::cantlaunch</extracomment>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>حدد صورة واحدة على الأقل أولًا.</translation>
         </message>
+        <message>
+            <source>The images in the folder have been deleted, but the folder itself will not
+be deleted due to the presence of additional files and/or folders.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CANT_DELETE_FOLDER</extracomment>
+            <translation>‏تم حذف الصور الموجودة في المجلد، ولكن لن يتم حذف المجلد نفسه
+نتيجة وجود ملفات و/ أو مجلدات إضافية.</translation>
+        </message>
     </context>
     <context>
         <name>FolderPane</name>
@@ -7993,10 +8001,11 @@ picasapy-origin-key: stringres:il_Cancel</extracomment>
             <translation>نقل المجلد</translation>
         </message>
         <message>
-            <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="233" />
-            <source>Browse for Folder</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>استعراض بحثًا عن مجلد</translation>
+            <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="298" />
+            <source>Move Folder to %1</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFolderFormat</extracomment>
+            <translation>نقل المجلد إلى %1</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="237" />
@@ -10849,19 +10858,22 @@ picasapy-origin-key: tooltips:Label(editpanel/in_progress_label)</extracomment>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="532" />
             <source>Make a caption!</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>أضف تسمية توضيحية!</translation>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CTextCaptionNode::defname</extracomment>
+            <translation>إنشاء تسمية توضيحية!</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="550" />
             <source>Delete this caption</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>حذف هذه التسمية التوضيحية</translation>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/captiontrash)</extracomment>
+            <translation>حذف التسمية التوضيحية</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="627" />
             <source>Show/Hide Caption</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/captionbutton)</extracomment>
             <translation>إظهار/إخفاء التسمية التوضيحية</translation>
         </message>
         <message>
@@ -10870,6 +10882,24 @@ picasapy-origin-key: tooltips:Label(editpanel/in_progress_label)</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: tooltips:Tooltip(editpanel/toggle_left_drawer)</extracomment>
             <translation>عرض/إخفاء عناصر التحكم في التعديل</translation>
+        </message>
+        <message>
+            <source>Confirm</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:ytApp::ConfirmTitle</extracomment>
+            <translation>تأكيد</translation>
+        </message>
+        <message>
+            <source>Are you sure you want to delete the caption for this image?</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CONFIRM_CAPTION_TRASH</extracomment>
+            <translation>هل تريد بالتأكيد حذف التسمية التوضيحية لهذه الصورة؟</translation>
+        </message>
+        <message>
+            <source>Delete Caption</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CONFIRM_CAPTION_YES_BUTTON</extracomment>
+            <translation>حذف التسمية التوضيحية</translation>
         </message>
     </context>
     <context>
@@ -10914,11 +10944,17 @@ picasapy-origin-key: acquirepanel_text:Tooltip(acquirepanel/previousbutton)</ext
             <translation>الصورة السابقة</translation>
         </message>
         <message>
-            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="100" />
-            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="101" />
+            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="110" />
             <source>Play Slideshow</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>تشغيل عرض الشرائح</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="111" />
+            <source>Watch a slideshow of these photos</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/sbutton)</extracomment>
+            <translation>شاهد عرض شرائح لهذه الصور</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="116" />
@@ -11055,7 +11091,13 @@ picasapy-origin-key: tooltips:Label(editpanel/sbutton)</extracomment>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="200" />
-            <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="247" />
+            <source>Watch a slideshow of these photos</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/sbutton)</extracomment>
+            <translation>شاهد عرض شرائح لهذه الصور</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="252" />
             <source>Play Slideshow</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>تشغيل عرض الشرائح</translation>
@@ -11642,21 +11684,6 @@ picasapy-origin-key: stringres:eMenuHelp::ID_HELP_KEYBOARD_SHORTCUTS</extracomme
             <source>TEST MODE — logging startup</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>وضع الاختبار — جارٍ تسجيل بدء التشغيل</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="71" />
-            <source>Are you sure you want to replace the existing caption with the contents of the clipboard?
-(This operation is not undoable)</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>هل تريد بالتأكيد استبدال التسمية التوضيحية الحالية بمحتوى الحافظة؟
-(لا يمكن التراجع عن هذه العملية)</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="85" />
-            <source>Replace</source>
-            <extracomment>picasapy-origin: picasa
-picasapy-origin-key: stringres:CDGo::ReplaceButton;stringres:CTextEditNode::confirmyesbutton;stringres:RestoreProc::replace</extracomment>
-            <translation>استبدال</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="91" />
@@ -13137,6 +13164,13 @@ picasapy-origin-key: stringres:PropertiesPanel::edit_keywords</extracomment>
 picasapy-origin: picasa
 picasapy-origin-key: stringres:IDS_KEYWORD_PREFS</extracomment>
             <translation>الكلمات الأساسية</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PropertiesPanel.qml" />
+            <source>Adjust &amp;Date and Time...</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:eMenuTools::ID_TOOLS_ADJUST_TIMESTAMP</extracomment>
+            <translation>‏ضب&amp;ط التاريخ والوقت...</translation>
         </message>
     </context>
     <context>

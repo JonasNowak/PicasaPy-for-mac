@@ -7,6 +7,42 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 
 ## [Nem kiadott]
 
+## [1.0.133] - 2026-11-16
+
+- A Gyorscímkék Autofill most egyszeri műveletként tölti ki a konfigurált üres mezőket (#7053).
+- A normál diavetítésben a Fel és a Le billentyű a Bal és a Jobb nyíl irányában lép, az 1-9 számjegy a diaidőt állítja másodpercben (a 0 az 1 másodpercet adja), a Pause lejátszás közben szünetet, a Play szünetben folytatást kapcsol, ahogy az eredeti Picasában (#7065).
+
+## [1.0.132] - 2026-11-16
+
+- Hálózati mappák képei és bélyegképei lassú SMB/GVFS csatoláson is megnyithatók, a felület közben használható marad (#7048).
+- A dátumállító ablak több kijelölt képnél a rácsban legelöl álló kép dátumával nyílik meg (#7054).
+
+## [1.0.131] - 2026-11-16
+
+- A nézőben (az eredeti Picasa szerkesztőjének megfelelőjében) a Másolás (Ctrl+C és a Szerkesztés menü) a megjelenített, szerkesztésekkel együtt kiszámolt képet teszi a vágólapra képadatként, így más programba közvetlenül képként beilleszthető; a könyvtárban a Másolás továbbra is a kijelölt képek fájljait adja (#7030).
+- A Tulajdonságok panel dátumsorának helyi menüje megnyitja a dátumállítót, a kulcsszósor a Címkék panelt kapcsolja (#7037).
+- A meglévő mappa helye szerkeszthető, az átnevezés pedig a Picasa névtisztítását követi (#7038).
+- Részleges mappatörléskor a hivatalos Picasa-figyelmeztetés jelenik meg, és a mappafa a lemezen maradt állapotot mutatja (#7039).
+
+## [1.0.130] - 2026-11-16
+
+- A képaláírás szerkesztése az eredeti Picasa szerint működik: a törlés megerősítést kér, a felirat máshova kattintva is mentődik, a változatlan szöveg nem írja újra a képet, írásvédett képnél a felirat mégis megmarad, és a szövegek a hivatalos fordítást használják (#7027).
+- A hálózati (NAS) mappa nem szerepel többé kétszer a mappalistában (a már kettőzött sorok adatvesztés nélkül egyesülnek), és az indulás meg a mappára kattintás nem vár a hálózatra: az indexelt képek azonnal megjelennek, a frissítés a háttérben fut, a lassúságot is javítva (#7044, #7045).
+
+## [1.0.129] - 2026-11-15
+
+- Több kijelölt képnél a csillagozás képenként fordítja a csillagállapotot az eredeti Picasa szerint (#7005).
+
+## [1.0.128] - 2026-11-15
+
+- A dokumentáció négy funkció (elrejtés, Hozzáadás albumhoz, címkézés, képaláírás) teljes folyamatát veti össze az eredeti Picasával (#7006, #7012, #7022, #7024).
+- A helyi menü Elrejtés és Megjelenítés tétele a felirata szerinti fix irányba hat a teljes kijelölésre (#7019).
+- Az Áthelyezés új mappába ablak a kijelölt kép dátumát ajánlja fel, nem a mai napot, ahogy az eredeti Picasa (#7020).
+
+## [1.0.127] - 2026-11-15
+
+- A címkézés az eredeti Picasa szerint működik: a Tags panel ismételt megnyitása bezárja a panelt, vesszővel több címke vehető fel egyszerre, a címke helyi menüjének sorrendje az eredeti, és a legutóbbi címkék kis- és nagybetűt megkülönböztetnek (#7025).
+
 ## [1.0.126] - 2026-11-15
 
 - Az Összes szerkesztés visszavonása az eredeti Picasa szerint a tükrözést, a szöveget és a szerkesztési előzményeket is törli (az elforgatás marad), és csak akkor választható, ha a kijelölés első szerkesztett képe nem csak elforgatott (#7017).

@@ -228,9 +228,7 @@ Rectangle {
     // művelet, egy út (különben két helyen kellene ugyanazt a
     // megerősítés-szöveget karbantartani).
     function mozgatasMappara(path) {
-        if (!path) return
-        pane._movingFolder = path
-        paneMenus.moveFolderDialog.open()
+        paneMenus.openMoveFolder(path)
     }
 
     function torlesLomtarba(path) {
@@ -264,7 +262,9 @@ Rectangle {
             controller ? controller.folderDateOverride(path) : ""
         paneMenus.folderPropertiesDialog.currentDescription =
             controller ? controller.folderDescriptionOf(path) : ""
-        paneMenus.folderPropertiesDialog.folderLocation = ""
+        paneMenus.folderPropertiesDialog.folderLocation =
+            controller && controller.folderLocationOf
+                ? controller.folderLocationOf(path) : ""
         paneMenus.folderPropertiesDialog.currentMusicEnabled =
             controller && controller.folderMusicEnabled
                 ? controller.folderMusicEnabled(path) : false

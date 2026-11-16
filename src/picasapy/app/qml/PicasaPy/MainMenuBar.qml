@@ -137,9 +137,10 @@ PicasaMenuBar {
         hostCollectionPasswordDialog.ensure().openForHiddenCollection()
     onRescanRequested: hostController.rescan()
     // #1526: a fájl-vágólap — a kijelölt képek fájljai kerülnek fel,
-    // így egy fájlkezelőbe közvetlenül beilleszthetők
-    onCopyFilesRequested: hostFileOpsController.copyFilesToClipboard(
-        hostWindow.photoActionPaths())
+    // így egy fájlkezelőbe közvetlenül beilleszthetők. #7030: a nézőben a
+    // Másolás a megjelenített, szerkesztett KÉPET teszi fel (ld.
+    // `copyActionToClipboard`).
+    onCopyFilesRequested: hostWindow.copyActionToClipboard()
     onCutFilesRequested: hostFileOpsController.cutFilesToClipboard(
         hostWindow.photoActionPaths())
     //: #1526: a Beillesztés célmappája a KIVÁLASZTOTT mappa. Ha a
@@ -317,7 +318,8 @@ PicasaMenuBar {
     // csak a NEVET kéri, a kijelölés útvonalait a hívás pillanatában
     // gyűjtjük (ugyanaz a minta, mint a `Move…`/`Törlés…` tételeknél).
     onMoveToNewFolderRequested:
-        hostFileOpsDialogs.ensure().openMoveToNewFolder(hostWindow.photoActionPaths())
+        hostFileOpsDialogs.ensure().openMoveToNewFolder(
+            hostWindow.photoActionPaths(), hostWindow.photoActionTakenAt())
     // #1472: Fájl ▸ Nyomtatás… / Ctrl+P — a nyomtatás-párbeszéd
     onPrintRequested: hostWindow.openPrint()
     // #1590: Mappa ▸ Bélyegképek nyomtatása… (Ctrl+Shift+P)

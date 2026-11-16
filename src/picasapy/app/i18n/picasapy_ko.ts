@@ -7724,6 +7724,14 @@ picasapy-origin-key: stringres:RestoreDialog::cantlaunch</extracomment>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>먼저 사진을 하나 이상 선택하세요.</translation>
         </message>
+        <message>
+            <source>The images in the folder have been deleted, but the folder itself will not
+be deleted due to the presence of additional files and/or folders.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CANT_DELETE_FOLDER</extracomment>
+            <translation>폴더의 이미지는 삭제되었지만 다른 파일 및/또는 폴더가 존재하므로 폴더 자체는
+ 삭제되지 않습니다.</translation>
+        </message>
     </context>
     <context>
         <name>FolderPane</name>
@@ -7948,10 +7956,11 @@ picasapy-origin-key: stringres:il_Cancel</extracomment>
             <translation>폴더 이동</translation>
         </message>
         <message>
-            <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="233" />
-            <source>Browse for Folder</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>폴더 찾아보기</translation>
+            <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="298" />
+            <source>Move Folder to %1</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFolderFormat</extracomment>
+            <translation>%1으(로) 폴더 이동</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="237" />
@@ -10774,20 +10783,23 @@ picasapy-origin-key: tooltips:Label(editpanel/in_progress_label)</extracomment>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="532" />
             <source>Make a caption!</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>설명을 추가하세요!</translation>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CTextCaptionNode::defname</extracomment>
+            <translation>설명을 넣으세요.</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="550" />
             <source>Delete this caption</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>이 설명 삭제</translation>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/captiontrash)</extracomment>
+            <translation>설명을 삭제합니다.</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="627" />
             <source>Show/Hide Caption</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>설명 표시/숨기기</translation>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/captionbutton)</extracomment>
+            <translation>설명을 표시하거나 숨깁니다.</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerOverlayControls.qml" line="683" />
@@ -10795,6 +10807,24 @@ picasapy-origin-key: tooltips:Label(editpanel/in_progress_label)</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: tooltips:Tooltip(editpanel/toggle_left_drawer)</extracomment>
             <translation>수정 컨트롤 표시/숨기기</translation>
+        </message>
+        <message>
+            <source>Confirm</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:ytApp::ConfirmTitle</extracomment>
+            <translation>확인</translation>
+        </message>
+        <message>
+            <source>Are you sure you want to delete the caption for this image?</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CONFIRM_CAPTION_TRASH</extracomment>
+            <translation>이미지의 설명을 삭제하시겠습니까?</translation>
+        </message>
+        <message>
+            <source>Delete Caption</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_CONFIRM_CAPTION_YES_BUTTON</extracomment>
+            <translation>설명 삭제</translation>
         </message>
     </context>
     <context>
@@ -10839,11 +10869,17 @@ picasapy-origin-key: acquirepanel_text:Tooltip(acquirepanel/previousbutton)</ext
             <translation>이전 사진</translation>
         </message>
         <message>
-            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="100" />
-            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="101" />
+            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="110" />
             <source>Play Slideshow</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>슬라이드쇼 재생</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="111" />
+            <source>Watch a slideshow of these photos</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/sbutton)</extracomment>
+            <translation>해당 사진을 슬라이드쇼로 봅니다.</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerQuickToolbar.qml" line="116" />
@@ -10980,7 +11016,13 @@ picasapy-origin-key: tooltips:Label(editpanel/sbutton)</extracomment>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="200" />
-            <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="247" />
+            <source>Watch a slideshow of these photos</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: tooltips:Tooltip(editpanel/sbutton)</extracomment>
+            <translation>해당 사진을 슬라이드쇼로 봅니다.</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PhotoViewerTopBar.qml" line="252" />
             <source>Play Slideshow</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>슬라이드쇼 재생</translation>
@@ -11567,21 +11609,6 @@ picasapy-origin-key: stringres:eMenuHelp::ID_HELP_KEYBOARD_SHORTCUTS</extracomme
             <source>TEST MODE — logging startup</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>테스트 모드 — 시작 기록</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="71" />
-            <source>Are you sure you want to replace the existing caption with the contents of the clipboard?
-(This operation is not undoable)</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>클립보드 내용으로 기존 설명을 바꾸시겠습니까?
-(이 작업은 실행 취소할 수 없습니다)</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="85" />
-            <source>Replace</source>
-            <extracomment>picasapy-origin: picasa
-picasapy-origin-key: stringres:CDGo::ReplaceButton;stringres:CTextEditNode::confirmyesbutton;stringres:RestoreProc::replace</extracomment>
-            <translation>바꾸기</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="91" />
@@ -13062,6 +13089,13 @@ picasapy-origin-key: stringres:PropertiesPanel::edit_keywords</extracomment>
 picasapy-origin: picasa
 picasapy-origin-key: stringres:IDS_KEYWORD_PREFS</extracomment>
             <translation>키워드</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/PropertiesPanel.qml" />
+            <source>Adjust &amp;Date and Time...</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:eMenuTools::ID_TOOLS_ADJUST_TIMESTAMP</extracomment>
+            <translation>날짜 및 시간 조정(&amp;D)...</translation>
         </message>
     </context>
     <context>
