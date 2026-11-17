@@ -37,6 +37,12 @@ Item {
     property alias exportMoveDatabaseDialog: moveDatabaseDialog
     property alias exportCompactDatabaseDialog: compactDatabaseDialog
     property alias exportPicasaDataImportDialog: picasaDataImportDialog
+    property string operationInfoMessage: ""
+
+    function showOperationInfo(message) {
+        operationInfoMessage = String(message || "")
+        operationInfoDialog.open()
+    }
 
     // #444: Mentés / Visszaállítás / Utolsó mentés visszavonása
     // #1720: halasztott példányosítás — a párbeszéd csak az első
@@ -92,6 +98,11 @@ Item {
         function onOperationFailed(operation, message) {
             fileOpsDialogs.ensure().showOperationError(operation, message)
         }
+        // #7112: a Paste-réteg csak azonos mappán kívül kér megerősítést;
+        // a halasztott fájlműveleti párbeszédek itt épülnek fel szükség esetén.
+        function onClipboardPasteConfirmationRequested(paths, dest, operation) {
+            fileOpsDialogs.ensure().openPasteConfirmation(paths, dest, operation)
+        }
         //: #6969: a Lomtárba helyezés `0x0f` eredménye - a külön Delete /
         //: Cancel kérdés a felhasználónak szól, némán elmaradnia nem szabad.
         function onImmediateDeletionRequired(path) {
@@ -141,6 +152,42 @@ Item {
                 //: picasapy-origin: picasa
                 //: picasapy-origin-key: stringres:IDS_SELECT_ONE_ONLY
                 text: qsTr("Please select a single picture to copy the effects from.")
+            }
+        }
+    }
+
+    // #7121: a kötegelt képműveletek eredeti Információ-ablaka. A jelzések
+    // szövegét a hívó fordítja, így az eredeti Picasa-üzenetek szövegtára és
+    // a meglévő jelzésnevek változatlanok maradnak.
+    Dialog {
+        id: operationInfoDialog
+        objectName: "operationInfoDialog"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        modal: true
+        title: qsTr("Info")
+        standardButtons: Dialog.Ok
+        implicitWidth: 400
+        readonly property string iconType: "info"
+
+        onOpened: standardButton(Dialog.Ok).objectName = "operationInfoOkButton"
+
+        contentItem: Row {
+            spacing: 12
+            Image {
+                objectName: "operationInfoIcon"
+                anchors.verticalCenter: parent.verticalCenter
+                source: "icons/dialog-info.svg"
+                sourceSize: Qt.size(32, 32)
+                width: 32
+                height: 32
+            }
+            Label {
+                objectName: "operationInfoText"
+                width: 316
+                anchors.verticalCenter: parent.verticalCenter
+                wrapMode: Text.WordWrap
+                text: dialogStack.operationInfoMessage
             }
         }
     }

@@ -3922,6 +3922,55 @@ picasapy-origin-key: stringres:AspectRatioList:Manual;stringres:EXIF::Manual</ex
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>%1 МБ на диску</translation>
         </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="51" />
+            <source>faces</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sfaces</extracomment>
+            <translation>обличчя</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="53" />
+            <source>starred</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sstarred</extracomment>
+            <translation>Із зірочкою</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="55" />
+            <source>movies</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::smovies</extracomment>
+            <translation>відеофайли</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="57" />
+            <source>geotagged</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sgeotag</extracomment>
+            <translation>з геотегом</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="82" />
+            <source>No matches</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::nomatch</extracomment>
+            <translation>Немає збігів</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="82" />
+            <source>Search results for "%1"</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::searchmatchstr</extracomment>
+            <translation>Результати пошуку для "%1"</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="85" />
+            <source>%1 results: </source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sresults</extracomment>
+            <translation>%1 результатів: </translation>
+        </message>
     </context>
     <context>
         <name>AboutDialog</name>
@@ -7119,16 +7168,36 @@ picasapy-origin-key: customaspectratio:customaspectratio/labelgroup10.title;rena
             <translation>Приклад:</translation>
         </message>
         <message>
+            <source>Confirm Copy</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFilesConfirmCopy</extracomment>
+            <translation>Підтвердити копіювання</translation>
+        </message>
+        <message>
             <source>Confirm Move</source>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:CThumbUI::MoveFilesConfirmMove</extracomment>
             <translation>Підтвердити переміщення</translation>
         </message>
         <message>
+            <source>Copy Files</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFilesToAlbumFolder::CopyYesButton</extracomment>
+            <translation>Копіювати файли</translation>
+        </message>
+        <message>
             <source>Move Files</source>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:CThumbUI::MoveFilesToAlbumFolder::MoveYesButton;stringres:CThumbUI::MoveProgress</extracomment>
             <translation>Перемістити файли</translation>
+        </message>
+        <message>
+            <source>Are you sure you want to copy the file(s) to
+%1 ?</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFilesToAlbumFolder::3</extracomment>
+            <translation>Дійсно скопіювати файли до 
+%1?</translation>
         </message>
         <message>
             <source>Are you sure you want to move the file(s) to
@@ -7975,10 +8044,9 @@ picasapy-origin-key: stringres:il_Cancel</extracomment>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="298" />
-            <source>Move Folder to %1</source>
-            <extracomment>picasapy-origin: picasa
-picasapy-origin-key: stringres:CThumbUI::MoveFolderFormat</extracomment>
-            <translation>Перемістити папку до %1</translation>
+            <source>Browse for Folder</source>
+            <extracomment>picasapy-origin: picasapy</extracomment>
+            <translation>Огляд папок</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="237" />
@@ -9529,6 +9597,15 @@ picasapy-origin-key: stringres:CThumbUI::SaveSearchBig</extracomment>
         </message>
     </context>
     <context>
+        <name>MainWindowLibraryActions</name>
+        <message>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_NEEDS_SELECTION</extracomment>
+            <source>This operation requires selected images.</source>
+            <translation>Для виконання цієї операції потрібно вибрати зображення.</translation>
+        </message>
+    </context>
+    <context>
         <name>MainWindowDialogStack</name>
         <message>
             <location filename="../qml/PicasaPy/MainWindowDialogStack.qml" line="0" />
@@ -9792,6 +9869,13 @@ picasapy-origin-key: stringres:CUploadManagerThread::cancel</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: initialscan:Text1(initialscan/ok-label);initialscan:Text2(initialscan/ok-label);stringres:il_BurnPanel::InsertNext::1;stringres:il_ContinueButton;uploadmgr:Label(uploadmgr/resume)</extracomment>
             <translation>Продовжити</translation>
+        </message>
+        <message>
+            <location filename="../src/picasapy/app/qml/PicasaPy/MainWindowCommands.qml" line="377" />
+            <source>A Folder or Album must be selected to do this.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_NEED_SELECTED_ALBUM</extracomment>
+            <translation>Для цього потрібно вибрати папку або альбом.</translation>
         </message>
         <message>
             <location filename="../src/picasapy/app/qml/PicasaPy/MainWindowCommands.qml" line="341" />
@@ -10103,12 +10187,6 @@ picasapy-origin-key: gpuploader_manage_devices:gpuploader_manage_devices/attache
             <source>Search</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Пошук</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/MainToolbar.qml" line="865" />
-            <source>Search results for "%1" (%2)</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>Результати пошуку за запитом «%1» (%2)</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/MainToolbar.qml" line="259" />
@@ -10736,6 +10814,20 @@ picasapy-origin-key: stringres:AlbumPhoto::ID_PICTURE_RESET_FACES;stringres:eMen
             <source>Ctrl+Delete</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Ctrl+Delete</translation>
+        </message>
+        <message>
+            <source>Starred Photos</source>
+            <comment>stringres:CThumbDB::starredphotos</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::starredphotos</extracomment>
+            <translation>Фотографії із зірочкою</translation>
+        </message>
+        <message>
+            <source>Screensaver</source>
+            <comment>stringres:CThumbDB::ScreensaverAlbumName</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::ScreensaverAlbumName</extracomment>
+            <translation>Заставка</translation>
         </message>
     </context>
     <context>
@@ -15106,6 +15198,25 @@ picasapy-origin-key: stringres:AlbumPhoto::ID_PICTURE_RESET_FACES;stringres:eMen
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Властивості</translation>
         </message>
+        <message>
+            <source>Starred Photos</source>
+            <comment>stringres:CThumbDB::starredphotos</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::starredphotos</extracomment>
+            <translation>Фотографії із зірочкою</translation>
+        </message>
+        <message>
+            <source>Screensaver</source>
+            <comment>stringres:CThumbDB::ScreensaverAlbumName</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::ScreensaverAlbumName</extracomment>
+            <translation>Заставка</translation>
+        </message>
+        <message>
+            <source>New Album...</source>
+            <extracomment>picasapy-origin: picasapy</extracomment>
+            <translation>Новий альбом…</translation>
+        </message>
     </context>
     <context>
         <name>FolderPropertiesDialog</name>
@@ -19156,6 +19267,12 @@ picasapy-origin-key: stringres:IDS_ROT_TYPEFAILED</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:IDS_MUST_SELECT_TO_ROT</extracomment>
             <translation>Потрібно вибрати зображення для повороту.</translation>
+        </message>
+        <message>
+            <source>Some images were not modified because of the file type.  Note that effects cannot be applied to movies.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_SOME_EDITS_FAILED_TYPE</extracomment>
+            <translation>Не вдається змінити деякі зображення: неправильний тип файлу.  Зауважте, що неможливо застосувати ефекти до фільмів.</translation>
         </message>
     </context>
     <context>

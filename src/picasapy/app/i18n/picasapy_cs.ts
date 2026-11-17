@@ -3922,6 +3922,55 @@ picasapy-origin-key: stringres:AspectRatioList:Manual;stringres:EXIF::Manual</ex
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>%1 MB na disku</translation>
         </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="51" />
+            <source>faces</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sfaces</extracomment>
+            <translation>tváře</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="53" />
+            <source>starred</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sstarred</extracomment>
+            <translation>S hvězdičkou</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="55" />
+            <source>movies</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::smovies</extracomment>
+            <translation>filmy</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="57" />
+            <source>geotagged</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sgeotag</extracomment>
+            <translation>označeno geotagem</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="82" />
+            <source>No matches</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::nomatch</extracomment>
+            <translation>Žádné výsledky</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="82" />
+            <source>Search results for "%1"</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::searchmatchstr</extracomment>
+            <translation>Vyhledat výsledky pro %1</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="85" />
+            <source>%1 results: </source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sresults</extracomment>
+            <translation>%1 výsledky: </translation>
+        </message>
     </context>
     <context>
         <name>AboutDialog</name>
@@ -7119,16 +7168,36 @@ picasapy-origin-key: customaspectratio:customaspectratio/labelgroup10.title;rena
             <translation>Příklad:</translation>
         </message>
         <message>
+            <source>Confirm Copy</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFilesConfirmCopy</extracomment>
+            <translation>Potvrdit kopírování</translation>
+        </message>
+        <message>
             <source>Confirm Move</source>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:CThumbUI::MoveFilesConfirmMove</extracomment>
             <translation>Potvrdit přesunutí</translation>
         </message>
         <message>
+            <source>Copy Files</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFilesToAlbumFolder::CopyYesButton</extracomment>
+            <translation>Kopírovat soubory</translation>
+        </message>
+        <message>
             <source>Move Files</source>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:CThumbUI::MoveFilesToAlbumFolder::MoveYesButton;stringres:CThumbUI::MoveProgress</extracomment>
             <translation>Přesunout soubory</translation>
+        </message>
+        <message>
+            <source>Are you sure you want to copy the file(s) to
+%1 ?</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFilesToAlbumFolder::3</extracomment>
+            <translation>Opravdu chcete kopírovat soubory do složky
+%1 ?</translation>
         </message>
         <message>
             <source>Are you sure you want to move the file(s) to
@@ -7975,10 +8044,9 @@ picasapy-origin-key: stringres:il_Cancel</extracomment>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="298" />
-            <source>Move Folder to %1</source>
-            <extracomment>picasapy-origin: picasa
-picasapy-origin-key: stringres:CThumbUI::MoveFolderFormat</extracomment>
-            <translation>Přesunout složku do %1</translation>
+            <source>Browse for Folder</source>
+            <extracomment>picasapy-origin: picasapy</extracomment>
+            <translation>Vyhledat složku</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="237" />
@@ -9529,6 +9597,15 @@ picasapy-origin-key: stringres:CThumbUI::SaveSearchBig</extracomment>
         </message>
     </context>
     <context>
+        <name>MainWindowLibraryActions</name>
+        <message>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_NEEDS_SELECTION</extracomment>
+            <source>This operation requires selected images.</source>
+            <translation>Tato operace vyžaduje vybrané fotky.</translation>
+        </message>
+    </context>
+    <context>
         <name>MainWindowDialogStack</name>
         <message>
             <location filename="../qml/PicasaPy/MainWindowDialogStack.qml" line="0" />
@@ -9792,6 +9869,13 @@ picasapy-origin-key: stringres:CUploadManagerThread::cancel</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: initialscan:Text1(initialscan/ok-label);initialscan:Text2(initialscan/ok-label);stringres:il_BurnPanel::InsertNext::1;stringres:il_ContinueButton;uploadmgr:Label(uploadmgr/resume)</extracomment>
             <translation>Pokračovat</translation>
+        </message>
+        <message>
+            <location filename="../src/picasapy/app/qml/PicasaPy/MainWindowCommands.qml" line="377" />
+            <source>A Folder or Album must be selected to do this.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_NEED_SELECTED_ALBUM</extracomment>
+            <translation>Pro provedení této akce je třeba vybrat složku nebo album.</translation>
         </message>
         <message>
             <location filename="../src/picasapy/app/qml/PicasaPy/MainWindowCommands.qml" line="341" />
@@ -10103,12 +10187,6 @@ picasapy-origin-key: gpuploader_manage_devices:gpuploader_manage_devices/attache
             <source>Search</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Hledat</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/MainToolbar.qml" line="865" />
-            <source>Search results for "%1" (%2)</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>Výsledky hledání pro „%1“ (%2)</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/MainToolbar.qml" line="259" />
@@ -10736,6 +10814,20 @@ picasapy-origin-key: stringres:AlbumPhoto::ID_PICTURE_RESET_FACES;stringres:eMen
             <source>Ctrl+Delete</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Ctrl+Delete</translation>
+        </message>
+        <message>
+            <source>Starred Photos</source>
+            <comment>stringres:CThumbDB::starredphotos</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::starredphotos</extracomment>
+            <translation>Fotky označené hvězdičkou</translation>
+        </message>
+        <message>
+            <source>Screensaver</source>
+            <comment>stringres:CThumbDB::ScreensaverAlbumName</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::ScreensaverAlbumName</extracomment>
+            <translation>Spořič obrazovky</translation>
         </message>
     </context>
     <context>
@@ -15106,6 +15198,25 @@ picasapy-origin-key: stringres:AlbumPhoto::ID_PICTURE_RESET_FACES;stringres:eMen
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Vlastnosti</translation>
         </message>
+        <message>
+            <source>Starred Photos</source>
+            <comment>stringres:CThumbDB::starredphotos</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::starredphotos</extracomment>
+            <translation>Fotky označené hvězdičkou</translation>
+        </message>
+        <message>
+            <source>Screensaver</source>
+            <comment>stringres:CThumbDB::ScreensaverAlbumName</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::ScreensaverAlbumName</extracomment>
+            <translation>Spořič obrazovky</translation>
+        </message>
+        <message>
+            <source>New Album...</source>
+            <extracomment>picasapy-origin: picasapy</extracomment>
+            <translation>Nové album...</translation>
+        </message>
     </context>
     <context>
         <name>FolderPropertiesDialog</name>
@@ -19156,6 +19267,12 @@ picasapy-origin-key: stringres:IDS_ROT_TYPEFAILED</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:IDS_MUST_SELECT_TO_ROT</extracomment>
             <translation>Musíte vybrat fotky pro otočení.</translation>
+        </message>
+        <message>
+            <source>Some images were not modified because of the file type.  Note that effects cannot be applied to movies.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_SOME_EDITS_FAILED_TYPE</extracomment>
+            <translation>Některé fotky nebyly upraveny kvůli typu souboru. Upozorňujeme, že efekty nelze použít u filmů.</translation>
         </message>
     </context>
     <context>

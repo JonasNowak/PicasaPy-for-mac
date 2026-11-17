@@ -3920,6 +3920,55 @@ picasapy-origin-key: stringres:AspectRatioList:Manual;stringres:EXIF::Manual</ex
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>디스크에 %1 MB</translation>
         </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="51" />
+            <source>faces</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sfaces</extracomment>
+            <translation>얼굴</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="53" />
+            <source>starred</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sstarred</extracomment>
+            <translation>별표 항목</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="55" />
+            <source>movies</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::smovies</extracomment>
+            <translation>동영상</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="57" />
+            <source>geotagged</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sgeotag</extracomment>
+            <translation>위치정보 태그 지정됨</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="82" />
+            <source>No matches</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::nomatch</extracomment>
+            <translation>일치하는 항목 없음</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="82" />
+            <source>Search results for "%1"</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::searchmatchstr</extracomment>
+            <translation>"%1"에 대한 검색결과</translation>
+        </message>
+        <message>
+            <location filename="../formatting_search_bar.py" line="85" />
+            <source>%1 results: </source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::sresults</extracomment>
+            <translation>%1개의 결과: </translation>
+        </message>
     </context>
     <context>
         <name>AboutDialog</name>
@@ -7107,16 +7156,36 @@ picasapy-origin-key: customaspectratio:customaspectratio/labelgroup10.title;rena
             <translation>예:</translation>
         </message>
         <message>
+            <source>Confirm Copy</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFilesConfirmCopy</extracomment>
+            <translation>복사 확인</translation>
+        </message>
+        <message>
             <source>Confirm Move</source>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:CThumbUI::MoveFilesConfirmMove</extracomment>
             <translation>이동 확인</translation>
         </message>
         <message>
+            <source>Copy Files</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFilesToAlbumFolder::CopyYesButton</extracomment>
+            <translation>파일 복사</translation>
+        </message>
+        <message>
             <source>Move Files</source>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:CThumbUI::MoveFilesToAlbumFolder::MoveYesButton;stringres:CThumbUI::MoveProgress</extracomment>
             <translation>파일 이동</translation>
+        </message>
+        <message>
+            <source>Are you sure you want to copy the file(s) to
+%1 ?</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbUI::MoveFilesToAlbumFolder::3</extracomment>
+            <translation>파일을 %1(으)로 복사
+하시겠습니까?</translation>
         </message>
         <message>
             <source>Are you sure you want to move the file(s) to
@@ -7957,10 +8026,9 @@ picasapy-origin-key: stringres:il_Cancel</extracomment>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="298" />
-            <source>Move Folder to %1</source>
-            <extracomment>picasapy-origin: picasa
-picasapy-origin-key: stringres:CThumbUI::MoveFolderFormat</extracomment>
-            <translation>%1으(로) 폴더 이동</translation>
+            <source>Browse for Folder</source>
+            <extracomment>picasapy-origin: picasapy</extracomment>
+            <translation>폴더 찾아보기</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/FolderPaneMenus.qml" line="237" />
@@ -9503,6 +9571,15 @@ picasapy-origin-key: stringres:CThumbUI::SaveSearchBig</extracomment>
         </message>
     </context>
     <context>
+        <name>MainWindowLibraryActions</name>
+        <message>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_NEEDS_SELECTION</extracomment>
+            <source>This operation requires selected images.</source>
+            <translation>해당 작업을 진행하려면 선택된 이미지가 필요합니다.</translation>
+        </message>
+    </context>
+    <context>
         <name>MainWindowDialogStack</name>
         <message>
             <location filename="../qml/PicasaPy/MainWindowDialogStack.qml" line="0" />
@@ -9762,6 +9839,13 @@ picasapy-origin-key: stringres:CUploadManagerThread::cancel</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: initialscan:Text1(initialscan/ok-label);initialscan:Text2(initialscan/ok-label);stringres:il_BurnPanel::InsertNext::1;stringres:il_ContinueButton;uploadmgr:Label(uploadmgr/resume)</extracomment>
             <translation>계속</translation>
+        </message>
+        <message>
+            <location filename="../src/picasapy/app/qml/PicasaPy/MainWindowCommands.qml" line="377" />
+            <source>A Folder or Album must be selected to do this.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_NEED_SELECTED_ALBUM</extracomment>
+            <translation>해당 작업을 수행하려면 폴더 또는 앨범을 선택해야 합니다.</translation>
         </message>
         <message>
             <location filename="../src/picasapy/app/qml/PicasaPy/MainWindowCommands.qml" line="341" />
@@ -10073,12 +10157,6 @@ picasapy-origin-key: gpuploader_manage_devices:gpuploader_manage_devices/attache
             <source>Search</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>검색</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/MainToolbar.qml" line="865" />
-            <source>Search results for "%1" (%2)</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>"%1" 검색 결과 (%2)</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/MainToolbar.qml" line="259" />
@@ -10706,6 +10784,20 @@ picasapy-origin-key: stringres:AlbumPhoto::ID_PICTURE_RESET_FACES;stringres:eMen
             <source>Ctrl+Delete</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Ctrl+Delete</translation>
+        </message>
+        <message>
+            <source>Starred Photos</source>
+            <comment>stringres:CThumbDB::starredphotos</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::starredphotos</extracomment>
+            <translation>별표 표시된 사진</translation>
+        </message>
+        <message>
+            <source>Screensaver</source>
+            <comment>stringres:CThumbDB::ScreensaverAlbumName</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::ScreensaverAlbumName</extracomment>
+            <translation>스크린세이버</translation>
         </message>
     </context>
     <context>
@@ -15075,6 +15167,25 @@ picasapy-origin-key: stringres:AlbumPhoto::ID_PICTURE_RESET_FACES;stringres:eMen
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>속성</translation>
         </message>
+        <message>
+            <source>Starred Photos</source>
+            <comment>stringres:CThumbDB::starredphotos</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::starredphotos</extracomment>
+            <translation>별표 표시된 사진</translation>
+        </message>
+        <message>
+            <source>Screensaver</source>
+            <comment>stringres:CThumbDB::ScreensaverAlbumName</comment>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CThumbDB::ScreensaverAlbumName</extracomment>
+            <translation>스크린세이버</translation>
+        </message>
+        <message>
+            <source>New Album...</source>
+            <extracomment>picasapy-origin: picasapy</extracomment>
+            <translation>새 앨범...</translation>
+        </message>
     </context>
     <context>
         <name>FolderPropertiesDialog</name>
@@ -19125,6 +19236,12 @@ picasapy-origin-key: stringres:IDS_ROT_TYPEFAILED</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:IDS_MUST_SELECT_TO_ROT</extracomment>
             <translation>회전시킬 이미지를 선택하셔야 합니다.</translation>
+        </message>
+        <message>
+            <source>Some images were not modified because of the file type.  Note that effects cannot be applied to movies.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_SOME_EDITS_FAILED_TYPE</extracomment>
+            <translation>파일 형식 때문에 일부 이미지를 수정하지 못했습니다. 동영상에 효과를 적용할 수 없습니다.</translation>
         </message>
     </context>
     <context>

@@ -42,7 +42,7 @@ from picasapy.fileops import (
     validate_folder_name,
 )
 from picasapy.fileops import open_with
-from picasapy.fileops.move_folder import FolderMoveError
+from picasapy.fileops.move_folder import FolderMoveError, is_system_path
 from picasapy.ini import (
     IniConflictError,
     IniSaveError,
@@ -140,6 +140,8 @@ class FileOpsController(
     #: #1526: a vágólap fájl-tartalma változott — ettől él/szürkül a
     #: Beillesztés menütétel. A Qt vágólapjának `dataChanged`-jére kötjük.
     clipboardFilesChanged = Signal()
+    #: #7112: eltérő forrás- és célmappa esetén a QML előbb jóváhagyást kér.
+    clipboardPasteConfirmationRequested = Signal(list, str, str)
     operationFailed = Signal(str, str)  # (művelet, hibaüzenet)
     # (művelet, kész, kihagyott, hibás, első_hiba_oka) — a köteg EGYETLEN
     # összegzése (#457/2). #1430: az OK is kimegy, nem csak a darabszám. A

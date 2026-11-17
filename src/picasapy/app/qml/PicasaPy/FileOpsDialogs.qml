@@ -19,6 +19,9 @@ Item {
     // az eszköztár, de jóváhagyáskor a pillanatfelvételnyi kijelölést is
     // tagságként menti.
     property var newAlbumPhotoRows: []
+    // #7114: a vágólapos Beillesztés köteg az első fájlhibánál megáll; a
+    // jóváhagyott Paste ezt a jelzőt viszi a névütközési kérdésen át.
+    property bool pasteBatchActive: false
 
     function openRename(row) {
         renameDialog.openFor(row)
@@ -66,13 +69,29 @@ Item {
     // akkor kérdezünk (az eredeti sem kérdezett fölöslegesen); ütközés nélkül
     // az „átnevezés" ág fut, de az ott nem nevez át semmit.
     function startBatch(operation, paths, dest) {
+        dialogs.pasteBatchActive = false
+        _startBatch(operation, paths, dest)
+    }
+    function _startBatch(operation, paths, dest) {
         if (fileOpsController.conflictCountFor(paths, dest) > 0)
             duplicateNamesDialog.openFor(operation, paths, dest)
         else
             runBatch(operation, paths, dest, "rename")
     }
+    // #7112: Ctrl+V eltérő mappaazonosítójú Paste-je előbb megerősítést kér;
+    // jóváhagyás után ugyanaz az ütközésvizsgálat fut, mint a többi kötegnél.
+    function openPasteConfirmation(paths, dest, operation) {
+        pasteConfirmDialog.openFor(paths, dest, operation)
+    }
+    function startPasteBatch(operation, paths, dest) {
+        dialogs.pasteBatchActive = true
+        _startBatch(operation, paths, dest)
+    }
     function runBatch(operation, paths, dest, policy) {
-        if (operation === "copy")
+        if (dialogs.pasteBatchActive) {
+            dialogs.pasteBatchActive = false
+            fileOpsController.runPasteBatch(operation, paths, dest, policy)
+        } else if (operation === "copy")
             fileOpsController.copyPhotos(paths, dest, policy)
         else
             fileOpsController.movePhotos(paths, dest, policy)
@@ -87,23 +106,37 @@ Item {
         dialogs.openNewAlbumProperties(controller.currentFolder, rows)
     }
 
-    //: #2911: a képek albumlistára ejtése az eredetiben névbekérő nélkül,
-    //: azonnal „Untitled” albumot készít (mérve); ez az út NEM a menüké.
+    // #7100: az Add to Album ▸ New Album... (fotó- és nézőmenü) ugyanezt az
+    // ablakot nyitja, de a dátuma a kijelölés ELSŐ képének ideje mínusz egy
+    // másodperc (nincs dátum: üres). A Fájl menü útja (`openNewAlbum`) más
+    // belépő, annak dátuma változatlanul üres.
+    function openAddToNewAlbum(rows) {
+        if (!controller || !rows || rows.length === 0) return
+        var elso = controller.photos.itemAt(Number(rows[0]))
+        dialogs.openNewAlbumProperties(
+            controller.currentFolder, rows,
+            UjMappaDatum.albumDatum(elso ? elso.takenAt : ""))
+    }
+
+    // #7102: a helyőrző sorra ejtés az Album Properties párbeszédet nyitja;
+    // alapdátuma a mai nap mínusz egy másodperc (`0x005ea770`, mai idő).
     function createAlbumFromDrop(rows) {
         if (!controller || !rows || rows.length === 0) return
-        controller.createAlbum(dialogs.ujAlbumNeve, rows)
+        dialogs.openNewAlbumProperties(
+            controller.currentFolder, rows,
+            Qt.formatDate(new Date(Date.now() - 1000), "yyyy-MM-dd"))
     }
 
     // #5812: az eszköztár új album gombja az Album Properties párbeszédet
     // nyitja. Jóváhagyáskor a controller az albumdefiníciót az aktuális
     // mappa ini-jébe írja, képtagság létrehozása nélkül.
-    function openNewAlbumProperties(folderPath, rows) {
+    function openNewAlbumProperties(folderPath, rows, isoDate) {
         var dialog = toolbarAlbumPropertiesDialog
         dialogs.newAlbumPhotoRows = rows && rows.length > 0 ? rows.slice() : []
         dialog.albumFolderPath = folderPath || ""
         dialog.albumToken = ""
         dialog.albumName = dialog.untitledFolderName
-        dialog.currentDate = ""
+        dialog.currentDate = isoDate || ""
         dialog.albumLocation = ""
         dialog.currentDescription = ""
         dialog.currentMusicEnabled = false
@@ -126,15 +159,21 @@ Item {
             if (!controller) return
             var rows = dialogs.newAlbumPhotoRows
             dialogs.newAlbumPhotoRows = []
+            var token = ""
             if (rows.length > 0 && controller.createAlbumWithProperties) {
-                controller.createAlbumWithProperties(
+                token = controller.createAlbumWithProperties(
                     name, rows, isoDate, location, description,
                     useMusic, musicFile)
             } else if (controller.createEmptyAlbum) {
-                controller.createEmptyAlbum(
+                token = controller.createEmptyAlbum(
                     name, folderPath, isoDate, location, description,
                     useMusic, musicFile)
             }
+            // #7076: siker után az új album nyílik meg (az eredetiben az
+            // újonnan kapott azonosító lesz az aktuális album); üres token
+            // (írási hiba) esetén marad a jelenlegi nézet és a kijelölés.
+            if (token && dialogs.appWindow && dialogs.appWindow.openAlbum)
+                dialogs.appWindow.openAlbum(token)
         }
     }
 
@@ -421,6 +460,56 @@ Item {
         onAccepted: moveConfirmDialog.openFor(paths, selectedFolder.toString())
     }
 
+    // #7112: az eltérő forrás- és célmappás vágólap-művelet megerősítése.
+    Dialog {
+        id: pasteConfirmDialog
+        objectName: "pasteConfirmDialog"
+        implicitWidth: 380 + leftPadding + rightPadding
+        title: operation === "copy" ? qsTr("Confirm Copy") : qsTr("Confirm Move")
+        modal: true
+        anchors.centerIn: parent
+        property string operation: "copy"
+        property var paths: []
+        property string dest: ""
+        function openFor(pathList, destFolder, kind) {
+            if (!pathList || pathList.length === 0) return
+            paths = pathList.slice(0)
+            dest = destFolder
+            operation = kind === "cut" || kind === "move" ? "move" : "copy"
+            open()
+        }
+        Text {
+            width: 380
+            text: pasteConfirmDialog.operation === "copy"
+                ? qsTr("Are you sure you want to copy the file(s) to\n%1 ?")
+                    .arg(pasteConfirmDialog.dest)
+                : qsTr("Are you sure you want to move the file(s) to\n%1 ?")
+                    .arg(pasteConfirmDialog.dest)
+            wrapMode: Text.WordWrap
+            font.pixelSize: Theme.fontSize
+            color: Theme.ink
+        }
+        footer: DialogButtonBox {
+            Button {
+                objectName: "pasteConfirmAcceptButton"
+                text: pasteConfirmDialog.operation === "copy"
+                    ? qsTr("Copy Files") : qsTr("Move Files")
+                onClicked: {
+                    var operation = pasteConfirmDialog.operation
+                    var paths = pasteConfirmDialog.paths.slice(0)
+                    var dest = pasteConfirmDialog.dest
+                    pasteConfirmDialog.close()
+                    dialogs.startPasteBatch(operation, paths, dest)
+                }
+            }
+            Button {
+                objectName: "pasteConfirmCancelButton"
+                text: qsTr("Cancel")
+                onClicked: pasteConfirmDialog.close()
+            }
+        }
+    }
+
     // #457/2: az eredeti a célmappa kiválasztása UTÁN még rákérdezett
     // (`CThumbUI::MoveFilesToAlbumFolder::6`, elfogadó gomb: „Fájlok
     // áthelyezése" — `MoveYesButton`). Csak ezután jött a névütközés
@@ -478,7 +567,7 @@ Item {
         // a szövegdoboz + a stílus térközei. A `Text.implicitWidth` Qt 6-ban
         // ÍRÁSVÉDETT, ezért nem ott törjük meg a kört.
         implicitWidth: 380 + leftPadding + rightPadding
-        title: moveConfirmDialog.title
+        title: operation === "copy" ? qsTr("Confirm Copy") : qsTr("Confirm Move")
         modal: true
         anchors.centerIn: parent
         property string operation: "move"

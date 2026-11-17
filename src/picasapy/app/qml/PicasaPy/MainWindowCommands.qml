@@ -370,7 +370,15 @@ Item {
     function beillesztAVagolaprol() {
         if (typeof fileOpsController === "undefined" || !fileOpsController
                 || !hostController) return
-        if (fileOpsController.pasteFilesFromClipboard(hostController.currentFolder))
+        //: #7113: `IDS_NEED_SELECTED_ALBUM` (`0x005791fb`) - fájl van a
+        //: vágólapon, de nincs célmappa; az üres vágólap külön üzenet.
+        if (fileOpsController.clipboardHasFiles && !hostController.currentFolder) {
+            hostWindow.errorBanner.notice = true
+            hostWindow.errorBannerText.text = qsTr("A Folder or Album must be selected to do this.")
+            return
+        }
+        var mappaNezet = hostController.viewModeName === "folder"
+        if (fileOpsController.pasteFilesFromClipboard(hostController.currentFolder, mappaNezet))
             return
         hostWindow.errorBanner.notice = true
         hostWindow.errorBannerText.text = qsTr("There are no files on the clipboard to paste.")
@@ -728,6 +736,7 @@ Item {
     }
     Timer {
         id: suggestionsTimer
+        objectName: "suggestionsTimer"
         interval: 150
         onTriggered: hostWindow.refreshSuggestions()
     }
