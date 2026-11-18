@@ -17,16 +17,7 @@ ColumnLayout {
             font.pixelSize: Theme.fontSize
             color: Theme.ink
         }
-        Text {
-            objectName: "importSourceDestPathText"
-            Layout.fillWidth: true
-            elide: Text.ElideMiddle
-            text: hostWindow.destFolderDisplay.length > 0
-                  ? hostWindow.destFolderDisplay
-                  : qsTr("(none selected)")
-            font.pixelSize: Theme.fontSize
-            color: Theme.ink
-        }
+        Item { Layout.fillWidth: true }
         // #1785: a korábbi CÉLMAPPÁK — az eredeti a célt is megjegyzi
         // (`Preferences\LastImport%x`), és háromszakaszos menüben
         // kínálja: korábbi importok · alapértelmezett hely · „Choose…".
@@ -99,6 +90,18 @@ ColumnLayout {
             onClicked: folderDialog.open()
         }
     }
+    // #7206: a főablak-panel keskeny jobb hasábjában a sorban nem fér el az
+    // útvonal (a legördülők és a Browse... elviszik a helyet), ezért külön sorba kerül.
+    Text {
+        objectName: "importSourceDestPathText"
+        Layout.fillWidth: true
+        elide: Text.ElideMiddle
+        text: hostWindow.destFolderDisplay.length > 0
+              ? hostWindow.destFolderDisplay
+              : qsTr("(none selected)")
+        font.pixelSize: Theme.fontSize
+        color: Theme.ink
+    }
 
     ButtonGroup { id: namingModeGroup }
 
@@ -133,10 +136,18 @@ ColumnLayout {
             wrapMode: Text.WordWrap
             font.pixelSize: Theme.fontSize
             color: Theme.ink
-            visible: hostWindow.namingMode === "manual"
-                     && hostWindow.manualFolderName.trim().length === 0
-            //: #4595: `acquirepanel/importtiptext` (Text1)
-            text: qsTr("Enter new folder title or choose existing folder to continue")
+            visible: true
+            text: {
+                if (hostWindow.namingMode === "manual") {
+                    //: #7177: `acquirepanel_text` Text1 és Text2
+                    return hostWindow.canImportAll
+                        ? qsTr("Click Import All or Import Selected")
+                        : qsTr("Enter new folder title or choose existing folder to continue")
+                }
+                if (hostWindow.namingMode === "today")
+                    return qsTr("Import into folder with today's date")
+                return qsTr("Import into separate folders for each date taken")
+            }
         }
         RadioButton {
             objectName: "importSourceNamingByDateRadio"
@@ -158,6 +169,11 @@ ColumnLayout {
     }
 
     // -- "After Copying:" háromállapotú forrás-törlés (#441) -----------
+    // #7183: a három mód csak törölhető forrásnál aktív (csatolt meghajtó,
+    // gyökerében `DCIM` mappával: `0x00519630`, `0x005277e0`); egyébként a
+    // menü Leave állású és letiltott. A választott (tárolt) érték a
+    // `hostWindow.afterCopying`-ben marad, törölhető forrásra visszaváltva
+    // újra ez látszik.
     Text {
         text: qsTr("After Copying:")
         font.pixelSize: Theme.fontSize
@@ -171,22 +187,25 @@ ColumnLayout {
         RadioButton {
             objectName: "importSourceAfterLeaveRadio"
             text: qsTr("Leave card alone")
+            enabled: hostWindow.sourceDeletable
             ButtonGroup.group: afterCopyingGroup
-            checked: hostWindow.afterCopying === "leave"
+            checked: hostWindow.effectiveAfterCopying === "leave"
             onToggled: if (checked) hostWindow.afterCopying = "leave"
         }
         RadioButton {
             objectName: "importSourceAfterDeleteCopiedRadio"
             text: qsTr("Delete only copied photos")
+            enabled: hostWindow.sourceDeletable
             ButtonGroup.group: afterCopyingGroup
-            checked: hostWindow.afterCopying === "delete_copied"
+            checked: hostWindow.effectiveAfterCopying === "delete_copied"
             onToggled: if (checked) hostWindow.afterCopying = "delete_copied"
         }
         RadioButton {
             objectName: "importSourceAfterDeleteAllRadio"
             text: qsTr("Delete everything on card")
+            enabled: hostWindow.sourceDeletable
             ButtonGroup.group: afterCopyingGroup
-            checked: hostWindow.afterCopying === "delete_all"
+            checked: hostWindow.effectiveAfterCopying === "delete_all"
             onToggled: if (checked) hostWindow.afterCopying = "delete_all"
         }
     }
@@ -250,19 +269,25 @@ ColumnLayout {
         Item { Layout.fillWidth: true }
         PicasaButton {
             objectName: "importSourceStartButton"
-            text: qsTr("Import")
+            //: #7177: `acquirepanel_text` Label(acquirepanel/anowbutton)
+            text: qsTr("Import All")
             accent: Theme.picasaGreen
-            enabled: hostWindow.includedCount > 0
-                     && hostWindow.destFolder.length > 0
-                     && !hostWindow.importing
-                     && (hostWindow.namingMode !== "manual"
-                         || hostWindow.manualNameValid)
+            enabled: hostWindow.canImportAll
             onClicked: hostWindow.requestImport()
+        }
+        PicasaButton {
+            objectName: "importSourceSelectedButton"
+            //: #7177: `acquirepanel_text` Label(acquirepanel/import_selected)
+            text: qsTr("Import Selected") + " ("
+                  + hostWindow.selectedIncludedCount + ")"
+            accent: Theme.picasaGreen
+            enabled: hostWindow.canImportSelected
+            onClicked: hostWindow.requestSelectedImport()
         }
         PicasaButton {
             objectName: "importSourceCloseButton"
             text: qsTr("Close")
-            onClicked: hostWindow.visible = false
+            onClicked: hostWindow.closePanel()
         }
     }
 }

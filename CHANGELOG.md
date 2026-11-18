@@ -7,6 +7,40 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 
 ## [Nem kiadott]
 
+## [1.0.146] - 2026-11-18
+
+- A megnyitott üres album a Delete billentyűre megerősítés nélkül törlődik, az Album menü Delete parancsa után a könyvtár eleje látszik, és az ini megőrzi az album tokenjét (#7208).
+- A diavetítés vezérlősávjában nincs többé Timeline gomb, az átmenet-választó mindig látszik. Ismétlés nélkül a vetítés a lista végén nyitva marad az utolsó képen (Esc-cel vagy a Kilépés gombbal zárható, a Jobbra gomb az első képre lép) (#7209).
+
+## [1.0.145] - 2026-11-18
+
+- A diavetítés kézi léptetése az utolsó képről az elsőre fordul, az első képről hátra pedig nem lép, ismétléstől függetlenül. (#7190).
+- A keresőmezőbe írt szöveg és a csillag, az arc vagy a geocímke szűrő együtt szűkít: a találat csak az a kép, amely mindkettőnek megfelel; a szűrőgomb kikapcsolása a keresőszöveget, a szöveg törlése a gombot megtartja (#7191).
+
+## [1.0.144] - 2026-11-18
+
+- A keresési találatok darabszáma, a bal oldali mappalista és a találati sáv sem számolja a rejtett képeket, ha a rejtett képek megjelenítése ki van kapcsolva (#7194).
+
+## [1.0.143] - 2026-11-18
+
+- A mappalistán gépelt betű, szám vagy jel a keresőmezőbe kerül és elindítja a keresést, mint a bélyegképrácson; az ékezetes betű, a Ctrl és az Alt nem indít keresést (#7192).
+- A keresőszavak külön, ÉS kapcsolatban keresnek, a mínuszjeles szavak kizárják a találatokat (#7193).
+
+## [1.0.142] - 2026-11-18
+
+- Az importablak megjegyzi az almappa-módot, a törlési módot és az öt legutóbbi célmappát (az import indításakor mentve, üres profilban kézi cím és Leave card alone), a törlési mód pedig csak DCIM mappás csatolt kártyánál aktív (#7183).
+- A normál diavetítésben az Enter, a Ctrl+R és a Ctrl+Shift+R nem csinál semmit, mint az eredetiben: nem léptet és nem forgat, a Fel/Le, a számjegyek és a Pause/Play a megszokott módon működik (#7189).
+
+## [1.0.141] - 2026-11-18
+
+- Ha importáláskor egy kép másolása nem sikerül, a törlési módok a forrásból semmit nem törölnek, és a forrás törlésének hibája sem akasztja meg az importablakot (#7172).
+- Az import "After Copying" törlési módjai (Delete only copied photos, Delete everything on card) egyetlen megerősítést kérnek az eredeti Remove Imported Files / Remove All Files és Cancel gombokkal, a Delete Copied az eredeti kisbetűs figyelmeztetéssel, "Do not ask again" jelölő nélkül, így a kérdés nem nyomható el véglegesen (#7173).
+- Az importablak külön Import All és Import Selected (N) gombot ad, a bélyegképek többes kijelöléssel választhatók, az Enter és az Esc az eredeti szerint működik, a tippsor pedig az importmódnak megfelelő négy eredeti üzenet egyikét mutatja (#7177).
+- Az importablak előnézetében a bélyegképre jobbat kattintva helyi menü nyílik Include File, Exclude File, Include All és Exclude All paranccsal; a mai gombok és a bélyegkép alatti hivatkozás változatlanul működnek (#7178).
+- A Fájl ▸ New Album... és a Ctrl+N kijelölt kép nélkül is elérhető: megnyitja az Untitled, mai dátumos Album Properties ablakot, és OK után üres albumot hoz létre (#7180).
+- Az Album/Mappa menü Delete... tétele mostantól törli a megnyitott felhasználói vagy személyalbumot, a képfájlok megőrzésével (#7181).
+- Az importablak alapméretében és legkisebb méretében is teljesen látszik az alsó gombsor (Import All, Import Selected, Close), eddig kilógott az ablak aljáról (#7185).
+
 ## [1.0.140] - 2026-11-17
 
 - A Fájl ▸ New Album a kijelölt képektől függetlenül üres albumot hoz létre, a `Untitled` névvel és a létrehozás napjával, mint az eredeti; a kép helyi menüjének és a tálcának New Album útja továbbra is felveszi a kijelölt képeket (#7164).

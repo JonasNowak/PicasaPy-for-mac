@@ -5,54 +5,38 @@ import QtQuick.Layouts
 
 // Import forrásból (#23/#441): külső mappa (pl. fényképezőgép/kártya
 // csatolt mappája, vagy bármely más mappa) képeinek/videóinak másolása a
-// könyvtárba — a Mappakezelő/DedupDialog mintájára ÖNÁLLÓ, mozgatható/
-// átméretezhető ablak (nem a főablakba ékelt Dialog).
+// könyvtárba — a főablak központi munkaterületén, a könyvtár helyén.
 //
 // #441 — a mai szabad szöveges mappa-sablon mező helyett HÁROM célmappa-
 // elnevezési mód (namingMode: "manual" | "date" | "today"), duplikátum-
 // kizárás (autoExclude, a jelölt-előnézetben "duplicate"/"excluded"
 // zászlókkal), egyenkénti válogatás, és háromállapotú, kétlépcsős
 // megerősítésű forrás-törlés ("After Copying:").
-Window {
+Rectangle {
     id: importSourceWindow
     objectName: "importSourceDialog"
-    title: qsTr("Import from Source")
-    modality: Qt.ApplicationModal
-
-    //: #3544: a Shift+F1 fejezete. Külön ablakos, modális párbeszéd: a
-    //: főablak súgója mögé kerülne, ezért a `WindowHelp` a párbeszéd FÖLÖTT,
-    //: külön ablakban nyitja.
-    property string helpTopic: "features/importalas.md"
-    WindowHelp { tema: importSourceWindow.helpTopic }
-    width: 640
-    height: 680
-    minimumWidth: 480
-    minimumHeight: 480
+    required property var hostWindow
+    anchors.fill: parent
     color: Theme.canvasBg
-    //: #3575: a külön `Window` NEM örökli a főablak `palette`-jét — enélkül
-    //: a célmappa-módok rádiófeliratai olvashatatlanok (mint a #3593-ban).
-    palette {
-        window: Theme.canvasBg
-        active.windowText: Theme.ink
-        inactive.windowText: Theme.ink
-        base: Theme.controlBase
-        alternateBase: Theme.panelBg
-        active.text: Theme.ink
-        inactive.text: Theme.ink
-        button: Theme.buttonBg
-        active.buttonText: Theme.ink
-        inactive.buttonText: Theme.ink
-        highlight: Theme.selectionBlue
-        highlightedText: Theme.panelSelectionText
-        placeholderText: Theme.placeholderText
-        mid: Theme.chromeBorder
-        light: Theme.shadeLight
-        dark: Theme.shadeDark
-        // #5874: ez az önálló ablak saját palettát használ; az aktív/inaktív
-        // tinták nem írják felül a disabled csoportot.
-        disabled.windowText: Theme.textGray
-        disabled.text: Theme.textGray
-        disabled.buttonText: Theme.textGray
+    implicitWidth: 900
+    implicitHeight: importSourceContent.implicitHeight
+                     + 2 * importSourceContent.anchors.margins
+
+    //: A Shift+F1 fejezete a főablak saját súgóján keresztül nyílik.
+    property string helpTopic: "features/importalas.md"
+    property bool closeAfterNextImport: false
+    property bool closeAfterImport: false
+
+    onVisibleChanged: {
+        if (hostWindow && hostWindow.importPanelOpen !== visible)
+            hostWindow.importPanelOpen = visible
+        if (visible)
+            importSourceWindow.loadStoredImportChoices()
+        if (visible
+                && typeof importSourceController !== "undefined"
+                && importSourceController
+                && importSourceController.refreshMountedSources !== undefined)
+            importSourceController.refreshMountedSources()
     }
 
     // a forrás/cél FolderDialog `selectedFolder.toString()`-ja (file:// URL
@@ -89,9 +73,10 @@ Window {
     }
 
     // #441: a HÁROM célmappa-elnevezési mód — a `picasapy.importsource.
-    // NAMING_*` konstansaival egyező string. A dátum szerinti bontás a
-    // Picasa import-munkafolyamatának lelke, ezért ez az alapértelmezés.
-    property string namingMode: "date"
+    // NAMING_*` konstansaival egyező string. #7183: az eredeti alapértéke a
+    // kézi cím (`acquireUseSubFolder` = 0, `0x00514180`); az ablak nyitáskor
+    // a vezérlő tárolt értékét veszi fel (`loadStoredImportChoices`).
+    property string namingMode: "manual"
     property string manualFolderName: ""
     // #4837: a kézi név egyetlen, biztonságos útvonal-elem-e (Python dönt)
     readonly property bool manualNameValid:
@@ -101,8 +86,28 @@ Window {
             || importSourceController.isValidFolderName(manualFolderName))
 
     // #441: "After Copying:" — a `picasapy.app.import_source_controller.
-    // AFTER_COPY_*` konstansaival egyező string.
+    // AFTER_COPY_*` konstansaival egyező string. #7183: a VÁLASZTOTT (tárolt)
+    // érték; ténylegesen csak törölhető forrásnál érvényes, egyébként az
+    // `effectiveAfterCopying` Leave.
     property string afterCopying: "leave"
+    // #7183: a forrás a csatolt meghajtók listájából jött-e (a mappa-, fájl- és
+    // előzményforrás sosem törölhető). A forrásválasztók állítják.
+    property bool sourceFromDrive: false
+    // #7183: törölhető forrás = csatolt meghajtó, gyökerében `DCIM` mappával
+    // (`0x0050f590` → `0x0050f6a0`); a vizsgálat Python-oldali (kis-nagybetű
+    // érzéketlen).
+    readonly property bool sourceDeletable:
+        importSourceWindow.sourceFromDrive
+        && importSourceWindow.sourceFiles.length === 0
+        && importSourceWindow.sourceFolder.length > 0
+        && (typeof importSourceController !== "undefined"
+            && importSourceController
+            && importSourceController.isDeletableSource !== undefined)
+        && importSourceController.isDeletableSource(
+               importSourceWindow.sourceFolder) === true
+    readonly property string effectiveAfterCopying:
+        importSourceWindow.sourceDeletable
+            ? importSourceWindow.afterCopying : "leave"
 
     property bool scanning: false
     // előnézeti elemek — dict-ek listája: {path, thumbUrl, duplicate,
@@ -113,6 +118,8 @@ Window {
     // Az eredeti previous/next gombok az előnézeti képet léptetik. A
     // bélyegkép-rács megmarad; a kijelölt kép kiemelése és görgetése követi.
     property int selectedPreviewIndex: 0
+    // A rácsbeli importkijelölés külön él az előnézeti képtől.
+    property var selectedPreviewPaths: []
     readonly property int duplicateCount: {
         var count = 0
         for (var i = 0; i < importSourceWindow.previewItems.length; i++) {
@@ -127,8 +134,33 @@ Window {
         }
         return count
     }
+    readonly property int selectedPreviewCount: {
+        var count = 0
+        for (var i = 0; i < importSourceWindow.previewItems.length; i++) {
+            if (importSourceWindow.isPreviewSelected(
+                    importSourceWindow.previewItems[i].path)) count++
+        }
+        return count
+    }
+    readonly property int selectedIncludedCount: {
+        var count = 0
+        for (var j = 0; j < importSourceWindow.previewItems.length; j++) {
+            var item = importSourceWindow.previewItems[j]
+            if (!item.excluded
+                    && importSourceWindow.isPreviewSelected(item.path)) count++
+        }
+        return count
+    }
+    readonly property bool canStartImport:
+        destFolder.length > 0
+        && !importing
+        && (namingMode !== "manual" || manualNameValid)
+    readonly property bool canImportAll: includedCount > 0 && canStartImport
+    readonly property bool canImportSelected:
+        selectedIncludedCount > 0 && canStartImport
 
     property bool importing: false
+    property bool pendingSelectedOnly: false
     property int importDone: 0
     property int importTotal: 0
     // #441: a másolás sebessége bájt/mp-ben (0 = még nem mérhető)
@@ -148,13 +180,20 @@ Window {
 
     property string lastError: ""
 
-    onVisibleChanged: {
-        if (visible
-                && typeof importSourceController !== "undefined"
-                && importSourceController
-                && importSourceController.refreshMountedSources !== undefined)
-            importSourceController.refreshMountedSources()
+    // #7183: az almappa-mód és a törlési mód az import INDÍTÁSAKOR mentődik;
+    // újranyitáskor a tárolt érték látszik (a nyitás óta csak átállított,
+    // el nem indított választás elvész, mint az eredetiben).
+    function loadStoredImportChoices() {
+        if (typeof importSourceController === "undefined"
+                || !importSourceController)
+            return
+        if (importSourceController.namingMode !== undefined)
+            importSourceWindow.namingMode = importSourceController.namingMode
+        if (importSourceController.afterCopying !== undefined)
+            importSourceWindow.afterCopying = importSourceController.afterCopying
     }
+
+    Component.onCompleted: importSourceWindow.loadStoredImportChoices()
 
     //: #1629: a megjelenített útvonal OS-NATÍV alakban. A szöveges
     //: `file://`-levágás Windowson `/C:/Users/…`-t hagyott maga után; a
@@ -183,7 +222,24 @@ Window {
             && importSourceController
             && importSourceController.defaultDestination !== undefined)
             importSourceWindow.destFolder = importSourceController.defaultDestination
+        if (importSourceWindow.hostWindow)
+            importSourceWindow.hostWindow.importPanelOpen = true
         importSourceWindow.visible = true
+        if (typeof importSourceController !== "undefined"
+                && importSourceController
+                && importSourceController.refreshMountedSources !== undefined)
+            importSourceController.refreshMountedSources()
+    }
+
+    function closePanel() {
+        if (importSourceWindow.hostWindow)
+            importSourceWindow.hostWindow.importPanelOpen = false
+        importSourceWindow.visible = false
+    }
+
+    function importBeforeClosing() {
+        importSourceWindow.closeAfterNextImport = true
+        importSourceWindow.requestImport()
     }
 
     function stepPreview(delta) {
@@ -192,6 +248,41 @@ Window {
             return
         importSourceWindow.selectedPreviewIndex = nextIndex
         previewPanel.positionAt(nextIndex)
+    }
+
+    function isPreviewSelected(path) {
+        return importSourceWindow.selectedPreviewPaths.indexOf(path) >= 0
+    }
+
+    function togglePreviewSelection(path, index) {
+        var selected = importSourceWindow.selectedPreviewPaths.slice()
+        var current = selected.indexOf(path)
+        if (current >= 0) selected.splice(current, 1)
+        else selected.push(path)
+        importSourceWindow.selectedPreviewPaths = selected
+        importSourceWindow.selectedPreviewIndex = index
+        previewPanel.positionAt(index)
+    }
+
+    function selectedImportPaths() {
+        var selected = []
+        for (var i = 0; i < importSourceWindow.previewItems.length; i++) {
+            var item = importSourceWindow.previewItems[i]
+            if (!item.excluded
+                    && importSourceWindow.isPreviewSelected(item.path))
+                selected.push(item.path)
+        }
+        return selected
+    }
+
+    // #7183: a mappa-forrás kiválasztása — a mappaválasztó, a korábbi források
+    // és a csatolt meghajtók legördülője egyaránt ezen át állít forrást;
+    // `fromDrive` csak a csatolt meghajtók listájából igaz.
+    function useSourceFolder(folder, fromDrive) {
+        importSourceWindow.sourceFiles = []
+        importSourceWindow.sourceFolder = folder
+        importSourceWindow.sourceFromDrive = fromDrive === true
+        importSourceWindow.scanCurrentSource()
     }
 
     // a forrás (rekurzív) beolvasása háttérszálon — a FolderDialog
@@ -217,6 +308,7 @@ Window {
     function useSelectedFiles(fileUrls) {
         if (!fileUrls || fileUrls.length === 0) return
         importSourceWindow.sourceFolder = ""
+        importSourceWindow.sourceFromDrive = false
         importSourceWindow.sourceFiles = fileUrls.map(function (url) {
             return url.toString()
         })
@@ -227,30 +319,59 @@ Window {
     // lent, `requestImport`) UTÁN hívódik.
     function runImportNow() {
         importSourceWindow.lastError = ""
-        importSourceController.runImport(
-            importSourceWindow.destFolder,
-            importSourceWindow.namingMode,
-            importSourceWindow.manualFolderName,
-            importSourceWindow.afterCopying)
+        importSourceWindow.closeAfterImport =
+            importSourceWindow.closeAfterNextImport
+        importSourceWindow.closeAfterNextImport = false
+        if (importSourceWindow.pendingSelectedOnly) {
+            importSourceController.runSelectedImport(
+                importSourceWindow.destFolder,
+                importSourceWindow.namingMode,
+                importSourceWindow.manualFolderName,
+                importSourceWindow.effectiveAfterCopying,
+                importSourceWindow.selectedImportPaths())
+        } else {
+            importSourceController.runImport(
+                importSourceWindow.destFolder,
+                importSourceWindow.namingMode,
+                importSourceWindow.manualFolderName,
+                importSourceWindow.effectiveAfterCopying)
+        }
     }
 
-    // #441: "After Copying:" — kétlépcsős, egyre erősebb megerősítés a
-    // törléssel járó két állapotnál; "Leave card alone"-nál nincs kérdés.
+    // "After Copying:" - a törléssel járó két állapotnál EGYETLEN
+    // megerősítés (az eredeti `0x00519720`, #7173); "Leave card alone"-nál
+    // nincs kérdés.
     function requestImport() {
-        if (importSourceWindow.destFolder.length === 0) return
-        if (importSourceWindow.includedCount === 0) return
-        // #4595: kézi módban cím nélkül nincs import (és nincs megerősítés sem)
-        if (importSourceWindow.namingMode === "manual"
-                && !importSourceWindow.manualNameValid) return
-        if (importSourceWindow.afterCopying === "leave") {
+        importSourceWindow.requestImportMode(false)
+    }
+
+    function requestSelectedImport() {
+        importSourceWindow.requestImportMode(true)
+    }
+
+    function requestImportMode(selectedOnly) {
+        var onlySelected = selectedOnly === true
+        if (onlySelected && !importSourceWindow.canImportSelected) return
+        if (!onlySelected && !importSourceWindow.canImportAll) return
+        importSourceWindow.pendingSelectedOnly = onlySelected
+        if (importSourceWindow.effectiveAfterCopying === "leave") {
             importSourceWindow.runImportNow()
             return
         }
-        removeImportedConfirm.ask("importSourceRemoveImported", qsTr(
-            // #465 4. pont: az eredeti Picasa NAGYBETŰVEL írja — ez a
-            // legsúlyosabb adatvesztési pont az egész programban
-            "Are you sure you want to remove the imported files from your "
-            + "card? THIS CANNOT BE UNDONE."))
+        // Delete Copied: a `confirmRemoveCopied::message` eredeti szövege
+        // (kisbetűs második mondattal); Delete All: a vezérlő összeállított
+        // figyelmeztetése.
+        removeConfirm.ask("", importSourceWindow.effectiveAfterCopying === "delete_all"
+            ? importSourceController.wipeCardWarning()
+            : qsTr("Are you sure you want to remove the imported files from "
+                   + "your card? This cannot be undone."))
+    }
+
+    function activateDefaultImport() {
+        if (importSourceWindow.selectedPreviewCount <= 1)
+            importSourceWindow.requestImport()
+        else
+            importSourceWindow.requestSelectedImport()
     }
 
     Connections {
@@ -260,6 +381,7 @@ Window {
             importSourceWindow.previewItems = items
             importSourceWindow.previewCount = count
             importSourceWindow.selectedPreviewIndex = 0
+            importSourceWindow.selectedPreviewPaths = []
             importSourceWindow.scanning = false
         }
         function onSourceScanFailed(message) {
@@ -289,12 +411,45 @@ Window {
         }
         function onImportFinished(copied, failed) {
             importSourceWindow.importing = false
+            importSourceWindow.pendingSelectedOnly = false
             importSourceWindow.lastCopiedCount = copied
             importSourceWindow.lastFailedCount = failed
+            if (importSourceWindow.closeAfterImport) {
+                importSourceWindow.closeAfterImport = false
+                if (copied > 0 && failed === 0) {
+                    importSourceWindow.closePanel()
+                    importSourceWindow.hostWindow.kilepes()
+                } else {
+                    importSourceWindow.closeAfterNextImport = false
+                }
+            }
         }
     }
 
+    Shortcut {
+        objectName: "importSourceReturnShortcut"
+        sequence: "Return"
+        context: Qt.WindowShortcut
+        enabled: importSourceWindow.visible
+        onActivated: importSourceWindow.activateDefaultImport()
+    }
+    Shortcut {
+        objectName: "importSourceEnterShortcut"
+        sequence: "Enter"
+        context: Qt.WindowShortcut
+        enabled: importSourceWindow.visible
+        onActivated: importSourceWindow.activateDefaultImport()
+    }
+    Shortcut {
+        objectName: "importSourceEscapeShortcut"
+        sequence: "Escape"
+        context: Qt.WindowShortcut
+        enabled: importSourceWindow.visible
+        onActivated: importSourceWindow.closePanel()
+    }
+
     ColumnLayout {
+        id: importSourceContent
         anchors.fill: parent
         anchors.margins: 10
         spacing: 8
@@ -305,13 +460,34 @@ Window {
             sourceFolderDialog: sourceFolderDialog
             sourceFilesDialog: sourceFilesDialog
         }
-        ImportSourcePreview {
-            id: previewPanel
-            hostWindow: importSourceWindow
-        }
-        ImportSourceDestinationPanel {
-            hostWindow: importSourceWindow
-            folderDialog: destFolderDialog
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 8
+
+            // A kijelölt kép a panel megmaradó, nyújtott részét kapja; a
+            // bélyegképrács mellette önállóan görgethető marad.
+            ImportSourcePreview {
+                id: previewPanel
+                hostWindow: importSourceWindow
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+            // A célbeállítás belső soraiban több rögzített szélességű
+            // választó van. A sima Item ad neki külön sávot, így a belső
+            // ColumnLayout nem nyújtózik rá a teljes sorra.
+            Item {
+                Layout.minimumWidth: 530
+                Layout.preferredWidth: 530
+                Layout.maximumWidth: 530
+                Layout.fillHeight: true
+
+                ImportSourceDestinationPanel {
+                    anchors.fill: parent
+                    hostWindow: importSourceWindow
+                    folderDialog: destFolderDialog
+                }
+            }
         }
     }
 
@@ -319,11 +495,8 @@ Window {
         id: sourceFolderDialog
         objectName: "importSourceFolderDialog"
         title: qsTr("Choose source folder...")
-        onAccepted: {
-            importSourceWindow.sourceFiles = []
-            importSourceWindow.sourceFolder = selectedFolder.toString()
-            importSourceWindow.scanCurrentSource()
-        }
+        onAccepted: importSourceWindow.useSourceFolder(
+            selectedFolder.toString(), false)
     }
 
     // #4596: kijelölt fájlok a forrás. A szűrők az eredeti tallózóéi
@@ -368,35 +541,18 @@ Window {
         onAccepted: importSourceWindow.destFolder = selectedFolder.toString()
     }
 
-    // #441 — kétlépcsős, egyre erősebb megerősítés a forrás-törléshez.
-    // 1. lépés: mindkét törléssel járó "After Copying:" állapotra közös,
-    // generikus kérdés. "delete_all"-nál ezt követi a 2. lépés (erősebb
-    // figyelmeztetés + "ne figyelmeztess többé"), "delete_copied"-nél a
-    // 2. lépés kimarad — a #422 mintája szerint EGYEDI namePrefix.
+    // Az egyetlen törlés-megerősítés (#7173). Az eredeti ablakban nincs
+    // „Do not ask again” jelölő és nincs „No” gomb, csak az igen-gomb és a
+    // Cancel; az üres kulcs miatt a kérdés soha nem nyomható el.
     ConfirmDialog {
-        id: removeImportedConfirm
-        namePrefix: "importSourceRemoveImportedConfirm"
+        id: removeConfirm
+        namePrefix: "importSourceConfirmRemove"
         title: qsTr("Import from Source")
-        onConfirmed: {
-            if (importSourceWindow.afterCopying === "delete_all") {
-                //: #860: az ÖSSZEÁLLÍTOTT figyelmeztetés a vezérlőtől jön
-                //: (`wipe_card_warning`) — darabszámokkal, a nem felismert
-                //: fájlokkal és a záró „A MŰVELET NEM VONHATÓ VISSZA."
-                //: mondattal. Korábban egy három pontra rövidített mondat
-                //: állt itt, ami épp a lényeget hallgatta el.
-                deleteAllWarningConfirm.ask(
-                    "importSourceDeleteAllWarning",
-                    importSourceController.wipeCardWarning())
-            } else {
-                importSourceWindow.runImportNow()
-            }
-        }
-    }
-
-    ConfirmDialog {
-        id: deleteAllWarningConfirm
-        namePrefix: "importSourceDeleteAllWarningConfirm"
-        title: qsTr("Import from Source")
+        rememberVisible: false
+        noVisible: false
+        yesText: importSourceWindow.effectiveAfterCopying === "delete_all"
+            ? qsTr("Remove All Files") : qsTr("Remove Imported Files")
+        onCanceled: importSourceWindow.closeAfterNextImport = false
         onConfirmed: importSourceWindow.runImportNow()
     }
 }

@@ -18,10 +18,14 @@ from PySide6.QtCore import (
     QStandardPaths,
     Qt,
 )
-from PySide6.QtQuick import QQuickWindow
+from PySide6.QtQuick import QQuickItem
 from PySide6.QtTest import QTest
 from support.halasztott_parbeszed import nyisd_meg
 
+from support.import_kartya_7183 import (
+    csatolt_kartya_kivalasztasa,
+    datum_szerinti_bontas,
+)
 from support.jpeg_factory import make_jpeg
 from support.qt_wait import hangos_hurok
 
@@ -40,7 +44,7 @@ def _click_center(dialog, item, qt_app):
     elemen a kattintás hatástalan, mint a felhasználónál)."""
     centre = item.mapToScene(QPointF(item.width() / 2, item.height() / 2))
     QTest.mouseClick(
-        dialog, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier,
+        item.window(), Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier,
         centre.toPoint(),
     )
     qt_app.processEvents()
@@ -50,8 +54,9 @@ def _dialog_window(window):
     # #1720: a párbeszéd HALASZTOTT — ha még nem áll, a valódi
     # menüponttal nyitjuk meg (support/halasztott_parbeszed.py).
     nyisd_meg(window, "importSourceDialog")
-    dialog = window.findChild(QQuickWindow, "importSourceDialog")
-    assert dialog is not None, "importSourceDialog nem található Window-ként"
+    dialog = window.findChild(QQuickItem, "importSourceDialog")
+    assert dialog is not None, "importSourceDialog nem található panelként"
+    assert dialog.window() == window, "az importpanel külön ablakban nyílt meg"
     return dialog
 
 
@@ -117,23 +122,20 @@ class TestToolbarEntryPoint:
             "halasztása elromlott"
         )
 
-        QMetaObject.invokeMethod(
-            button, "clicked", Qt.ConnectionType.DirectConnection
-        )
-        qt_app.processEvents()
+        _click_center(None, button, qt_app)
 
         dialog = window.findChild(QObject, "importSourceDialog")
         assert dialog is not None, "az Import gomb nem hozta létre az ablakot"
         assert dialog.property("visible") is True
 
 
-class TestDialogWindow:
-    def test_is_a_standalone_resizable_window(self, qml_app):
+class TestEmbeddedPanel:
+    def test_import_interface_is_embedded_in_the_main_window(self, qml_app):
         window, _controller, _lib, _engine = qml_app
         dialog = _dialog_window(window)
-        assert dialog.property("minimumWidth") is not None
-        assert dialog.property("minimumWidth") >= 400
-        assert dialog.property("minimumHeight") is not None
+        assert isinstance(dialog, QQuickItem)
+        assert dialog.window() == window
+        assert dialog.property("width") >= 400
 
     def test_close_button_hides_the_window(self, qml_app, qt_app):
         window, _controller, _lib, _engine = qml_app
@@ -148,10 +150,11 @@ class TestDialogWindow:
         qt_app.processEvents()
         assert dialog.property("visible") is False
 
-    def test_by_date_is_the_default_naming_mode(self, qml_app):
+    def test_manual_title_is_the_default_naming_mode(self, qml_app):
+        # #7183: az eredeti `acquireUseSubFolder` alapja 0 (kézi cím)
         window, _controller, _lib, _engine = qml_app
         dialog = _dialog_window(window)
-        assert dialog.property("namingMode") == "date"
+        assert dialog.property("namingMode") == "manual"
 
     def test_leave_card_alone_is_the_default_after_copying(self, qml_app):
         window, _controller, _lib, _engine = qml_app
@@ -188,6 +191,9 @@ class TestSourcePreview:
         assert Path(str(dialog.property("destFolder"))) == Path(expected)
         destination_text = _child(window, "importSourceDestPathText")
         assert Path(str(destination_text.property("text"))) == Path(expected)
+        # #7183: üres profilban a kézi cím az alapérték, cím nélkül nincs import
+        assert start_button.property("enabled") is False
+        datum_szerinti_bontas(dialog, qt_app)
         assert start_button.property("enabled") is True
 
     def test_empty_source_shows_empty_text(self, qml_app, qt_app, tmp_path):
@@ -315,6 +321,7 @@ class TestRunImport:
 
         _scan(dialog, source, engine, qt_app)
         dialog.setProperty("destFolder", str(dest))
+        datum_szerinti_bontas(dialog, qt_app)
 
         start_button = _child(window, "importSourceStartButton")
         assert start_button.property("enabled") is True
@@ -412,13 +419,15 @@ class TestRunImport:
         field = _child(window, "importSourceManualNameField")
         _click_center(dialog, field, qt_app)
         for char in "Nyaralas":
-            QTest.keyClick(dialog, char)
+            QTest.keyClick(dialog.window(), char)
         qt_app.processEvents()
 
         assert field.property("text") == "Nyaralas"
         start_button = _child(window, "importSourceStartButton")
         assert start_button.property("enabled") is True
-        assert _child(window, "importSourceManualTipText").property("visible") is False
+        tip = _child(window, "importSourceManualTipText")
+        assert tip.property("visible") is True
+        assert tip.property("text") == "Click Import All or Import Selected"
 
         loop = _quit_on(_import_source_controller(engine).importFinished)
         _click_center(dialog, start_button, qt_app)
@@ -470,7 +479,7 @@ class TestRunImport:
         field = _child(window, "importSourceManualNameField")
         _click_center(dialog, field, qt_app)
         for char in "../x":
-            QTest.keyClick(dialog, char)
+            QTest.keyClick(dialog.window(), char)
         qt_app.processEvents()
 
         assert field.property("text") == "../x"
@@ -510,125 +519,216 @@ class TestRunImport:
         assert (dest / date.today().isoformat() / "a.jpg").exists()
 
 
+# Az eredeti `confirmRemoveCopied::message` (stringres.xml, enUS), kisbetűs mondattal.
+_ELTAVOLITAS_UZENET = (
+    "Are you sure you want to remove the imported files from your card? "
+    "This cannot be undone."
+)
+
+
+def _kerdes(window):
+    """Az egyetlen törlés-megerősítő ablak elemei (#7173)."""
+    return {
+        "dialog": window.findChild(QObject, "importSourceConfirmRemoveDialog"),
+        "message": window.findChild(
+            QObject, "importSourceConfirmRemoveMessageLabel"
+        ),
+        "yes": window.findChild(QObject, "importSourceConfirmRemoveYesButton"),
+        "no": window.findChild(QObject, "importSourceConfirmRemoveNoButton"),
+        "cancel": window.findChild(
+            QObject, "importSourceConfirmRemoveCancelButton"
+        ),
+        "remember": window.findChild(
+            QObject, "importSourceConfirmRemoveRememberCheck"
+        ),
+    }
+
+
+def _forras_es_cel(
+    tmp_path, dialog, engine, qt_app, monkeypatch, *, darab=1
+):
+    """DCIM mappás csatolt kártya (valódi kattintással kiválasztva), dátum
+    szerinti bontás és beállított cél; visszaadja (forrás, cél).
+
+    #7183: a törlési mód csak olyan forrásnál él, amely a csatolt meghajtók
+    listájából jött, és a gyökerében `DCIM` mappa van."""
+    source = tmp_path / "kartya"
+    source.mkdir()
+    (source / "DCIM").mkdir()
+    for index in range(darab):
+        make_jpeg(
+            source / f"{'abcdef'[index]}.jpg",
+            taken_at=f"2024:03:0{5 + index} 10:00:00",
+        )
+    dest = tmp_path / "cel-konyvtar"
+    dest.mkdir()
+    csatolt_kartya_kivalasztasa(
+        dialog, _import_source_controller(engine), qt_app, monkeypatch,
+        source, darab=darab,
+    )
+    dialog.setProperty("destFolder", str(dest))
+    datum_szerinti_bontas(dialog, qt_app)
+    return source, dest
+
+
 class TestAfterCopyingConfirmation:
-    def test_delete_copied_asks_for_confirmation_before_deleting(
-        self, qml_app, qt_app, tmp_path
+    """#7173: az eredeti `0x00519720` egyetlen `Confirm Remove` ablakot kér
+    mindkét törlési módhoz; Leave módban nincs kérdés. A teszt valódi
+    egérkattintással indítja az importot és válaszol a kérdésre."""
+
+    def test_delete_copied_asks_one_question_with_the_original_texts(
+        self, qml_app, qt_app, tmp_path, monkeypatch
     ):
         window, _controller, _lib, engine = qml_app
         dialog = _dialog_window(window)
-        source = tmp_path / "kartya"
-        source.mkdir()
-        make_jpeg(source / "a.jpg", taken_at="2024:03:05 10:00:00")
-        dest = tmp_path / "cel-konyvtar"
-        dest.mkdir()
-
-        _scan(dialog, source, engine, qt_app)
-        dialog.setProperty("destFolder", str(dest))
-        dialog.setProperty("afterCopying", "delete_copied")
-
-        confirm = window.findChild(
-            QObject, "importSourceRemoveImportedConfirmDialog"
+        source, dest = _forras_es_cel(
+            tmp_path, dialog, engine, qt_app, monkeypatch
         )
-        assert confirm is not None
-        assert confirm.property("visible") is False
-
-        start_button = _child(window, "importSourceStartButton")
-        QMetaObject.invokeMethod(
-            start_button, "clicked", Qt.ConnectionType.DirectConnection
+        _click_center(
+            dialog, _child(window, "importSourceAfterDeleteCopiedRadio"), qt_app
         )
-        qt_app.processEvents()
 
-        # a megerősítő dialógus nyitva, az import MÉG nem futott le
-        assert confirm.property("visible") is True
+        kerdes = _kerdes(window)
+        assert kerdes["dialog"] is not None
+        assert kerdes["dialog"].property("visible") is False
+
+        _click_center(dialog, _child(window, "importSourceStartButton"), qt_app)
+
+        # a kérdés nyitva, az import MÉG nem futott le
+        assert kerdes["dialog"].property("visible") is True
         assert (source / "a.jpg").exists()
+        assert kerdes["message"].property("text") == _ELTAVOLITAS_UZENET
+        assert kerdes["yes"].property("text") == "Remove Imported Files"
+        assert kerdes["cancel"].property("text") == "Cancel"
+        assert kerdes["cancel"].property("visible") is True
+        assert kerdes["no"].property("visible") is False
+        assert kerdes["remember"].property("visible") is False
 
         loop = _quit_on(_import_source_controller(engine).importFinished)
-        yes_button = _child(window, "importSourceRemoveImportedConfirmYesButton")
-        QMetaObject.invokeMethod(
-            yes_button, "clicked", Qt.ConnectionType.DirectConnection
-        )
+        _click_center(dialog, kerdes["yes"], qt_app)
         loop.exec()
         qt_app.processEvents()
 
         assert (dest / "2024-03-05" / "a.jpg").exists()
         assert not (source / "a.jpg").exists()
 
-    def test_delete_all_asks_a_second_stronger_warning(
-        self, qml_app, qt_app, tmp_path
+    def test_delete_all_asks_one_question_with_the_wipe_warning(
+        self, qml_app, qt_app, tmp_path, monkeypatch
     ):
         window, _controller, _lib, engine = qml_app
         dialog = _dialog_window(window)
-        source = tmp_path / "kartya"
-        source.mkdir()
-        make_jpeg(source / "a.jpg", taken_at="2024:03:05 10:00:00")
-        make_jpeg(source / "b.jpg", taken_at="2024:03:06 10:00:00")
-        dest = tmp_path / "cel-konyvtar"
-        dest.mkdir()
-
-        _scan(dialog, source, engine, qt_app)
-        dialog.setProperty("destFolder", str(dest))
-        dialog.setProperty("afterCopying", "delete_all")
-
-        _import_source_controller(engine).excludeFile(str(source / "b.jpg"))
+        source, _dest = _forras_es_cel(
+            tmp_path, dialog, engine, qt_app, monkeypatch, darab=2
+        )
+        _click_center(
+            dialog, _child(window, "importSourceAfterDeleteAllRadio"), qt_app
+        )
+        controller = _import_source_controller(engine)
+        controller.excludeFile(str(source / "b.jpg"))
         qt_app.processEvents()
 
-        start_button = _child(window, "importSourceStartButton")
-        QMetaObject.invokeMethod(
-            start_button, "clicked", Qt.ConnectionType.DirectConnection
-        )
-        qt_app.processEvents()
+        _click_center(dialog, _child(window, "importSourceStartButton"), qt_app)
 
-        first_confirm = window.findChild(
-            QObject, "importSourceRemoveImportedConfirmDialog"
-        )
-        assert first_confirm.property("visible") is True
-        yes_button = _child(window, "importSourceRemoveImportedConfirmYesButton")
-        QMetaObject.invokeMethod(
-            yes_button, "clicked", Qt.ConnectionType.DirectConnection
-        )
-        qt_app.processEvents()
-
-        second_confirm = window.findChild(
-            QObject, "importSourceDeleteAllWarningConfirmDialog"
-        )
-        assert second_confirm is not None
-        assert second_confirm.property("visible") is True
-        # az import addig nem futott le
+        kerdes = _kerdes(window)
+        assert kerdes["dialog"].property("visible") is True
         assert (source / "a.jpg").exists()
-
-        loop = _quit_on(_import_source_controller(engine).importFinished)
-        second_yes = _child(window, "importSourceDeleteAllWarningConfirmYesButton")
-        QMetaObject.invokeMethod(
-            second_yes, "clicked", Qt.ConnectionType.DirectConnection
+        # az ÖSSZEÁLLÍTOTT figyelmeztetés, nagybetűs előkérdés nélkül
+        assert kerdes["message"].property("text") == controller.wipeCardWarning()
+        assert "remove the imported files" not in kerdes["message"].property(
+            "text"
         )
+        assert kerdes["yes"].property("text") == "Remove All Files"
+        assert kerdes["cancel"].property("text") == "Cancel"
+        assert kerdes["cancel"].property("visible") is True
+        assert kerdes["no"].property("visible") is False
+        assert kerdes["remember"].property("visible") is False
+
+        # egyetlen kérdés: az igenre azonnal indul az import (második
+        # ablak esetén ez a hurok a hangos vészfékkel elbukna)
+        loop = _quit_on(controller.importFinished)
+        _click_center(dialog, kerdes["yes"], qt_app)
         loop.exec()
         qt_app.processEvents()
 
+        assert window.findChild(
+            QObject, "importSourceDeleteAllWarningConfirmDialog"
+        ) is None
         # "Delete everything on card": a kizárt b.jpg is törlődik
         assert not (source / "a.jpg").exists()
         assert not (source / "b.jpg").exists()
 
-    def test_leave_card_alone_skips_confirmation(self, qml_app, qt_app, tmp_path):
+    def test_cancel_in_the_question_stops_the_removal_and_the_import(
+        self, qml_app, qt_app, tmp_path, monkeypatch
+    ):
         window, _controller, _lib, engine = qml_app
         dialog = _dialog_window(window)
-        source = tmp_path / "kartya"
-        source.mkdir()
-        make_jpeg(source / "a.jpg", taken_at="2024:03:05 10:00:00")
-        dest = tmp_path / "cel-konyvtar"
-        dest.mkdir()
+        source, dest = _forras_es_cel(
+            tmp_path, dialog, engine, qt_app, monkeypatch
+        )
+        _click_center(
+            dialog, _child(window, "importSourceAfterDeleteAllRadio"), qt_app
+        )
+        started = []
+        _import_source_controller(engine).importStarted.connect(started.append)
 
-        _scan(dialog, source, engine, qt_app)
-        dialog.setProperty("destFolder", str(dest))
+        _click_center(dialog, _child(window, "importSourceStartButton"), qt_app)
+        kerdes = _kerdes(window)
+        assert kerdes["dialog"].property("visible") is True
+        _click_center(dialog, kerdes["cancel"], qt_app)
+
+        assert kerdes["dialog"].property("visible") is False
+        assert started == []
+        assert (source / "a.jpg").exists()
+        assert list(dest.iterdir()) == []
+
+    def test_previously_suppressed_old_keys_do_not_skip_the_question(
+        self, qml_app, qt_app, tmp_path, monkeypatch
+    ):
+        # #7173: a két régi elnyomó kulcs (a `Do not ask again` jelölő
+        # lenyomata) már semmire sem hat: a kérdés mindig megjelenik.
+        window, _controller, _lib, engine = qml_app
+        dialog = _dialog_window(window)
+        source, _dest = _forras_es_cel(
+            tmp_path, dialog, engine, qt_app, monkeypatch
+        )
+        settings = engine.rootContext().contextProperty("confirmSettings")
+        settings.setSuppressed("importSourceRemoveImported", True)
+        settings.setSuppressed("importSourceDeleteAllWarning", True)
+        started = []
+        _import_source_controller(engine).importStarted.connect(started.append)
+
+        for mode, radio in (
+            ("delete_copied", "importSourceAfterDeleteCopiedRadio"),
+            ("delete_all", "importSourceAfterDeleteAllRadio"),
+        ):
+            _click_center(dialog, _child(window, radio), qt_app)
+            assert dialog.property("effectiveAfterCopying") == mode
+            _click_center(
+                dialog, _child(window, "importSourceStartButton"), qt_app
+            )
+            kerdes = _kerdes(window)
+            assert kerdes["dialog"].property("visible") is True, mode
+            assert started == [], mode
+            assert (source / "a.jpg").exists(), mode
+            _click_center(dialog, kerdes["cancel"], qt_app)
+            assert kerdes["dialog"].property("visible") is False, mode
+
+    def test_leave_card_alone_skips_confirmation(
+        self, qml_app, qt_app, tmp_path, monkeypatch
+    ):
+        window, _controller, _lib, engine = qml_app
+        dialog = _dialog_window(window)
+        source, dest = _forras_es_cel(
+            tmp_path, dialog, engine, qt_app, monkeypatch
+        )
         # afterCopying alapértelmezetten "leave"
 
         loop = _quit_on(_import_source_controller(engine).importFinished)
-        start_button = _child(window, "importSourceStartButton")
-        QMetaObject.invokeMethod(
-            start_button, "clicked", Qt.ConnectionType.DirectConnection
-        )
+        _click_center(dialog, _child(window, "importSourceStartButton"), qt_app)
         loop.exec()
         qt_app.processEvents()
 
+        assert _kerdes(window)["dialog"].property("visible") is False
         assert (source / "a.jpg").exists()
         assert (dest / "2024-03-05" / "a.jpg").exists()
 
