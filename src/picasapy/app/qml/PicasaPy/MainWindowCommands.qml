@@ -738,6 +738,13 @@ Item {
         interval: 150
         onTriggered: hostWindow.refreshSuggestions()
     }
+    SearchSuggestionActions {
+        id: searchSuggestionActions
+        hostWindow: commandSurface.hostWindow
+        hostController: commandSurface.hostController
+        toolbar: hostRefs.toolbar
+        suggestionsTimer: suggestionsTimer
+    }
     SearchSuggestions {
         id: searchSuggestionsBox
         objectName: "searchSuggestions"
@@ -753,22 +760,10 @@ Item {
         visible: suggestions.length > 0 && hostRefs.toolbar.searchText.length > 0
                  && !hostWindow.viewerOpen && hostWindow.libraryFrameVisible
         onChosen: function(kind, name, param) {
-            if (kind === "folder") {
-                // #7217: a mappanév és egy szóköz a keresésben marad.
-                hostRefs.toolbar.keresesSzoveggel(name + " ")
-                suggestionsTimer.stop()
-                hostController.search(name + " ")
-                hostController.selectFolderKeepSearch(param)
-            } else if (kind === "album") {
-                hostRefs.toolbar.clearSearch()
-                hostWindow.clearSelection()
-                hostWindow.unnamedFacesOpen = false
-                hostController.showAlbum(param)
-            }
+            searchSuggestionActions.choose(kind, name, param)
             suggestions = []
         }
     }
-
 
     function onWindowCompleted() {
         if (hostController && hostController.attachHoverPreviewKeyState)

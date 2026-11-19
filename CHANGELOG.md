@@ -7,6 +7,35 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 
 ## [Nem kiadott]
 
+## [1.0.158] - 2026-11-19
+
+## [1.0.157] - 2026-11-19
+
+- A kereső a felvétel dátumára is talál: a teljes dátumra (például 2019:03:08), a hónapra (2019:03) és az évre. (#7241).
+- A nyomtatás előtti felülvizsgálat Low, Good, Best minőség szerint csoportosítja a képeket, a csoportokon belül megőrizve a forrássorrendet. (#7249).
+- Az új album adatai az eredeti Picasa-kulcssorrendben kerülnek a `.picasa.ini`-fájlba (#7250).
+- A másolat mentésekor a névütközési számozás legfeljebb a -4095 sorszámig keres, mint az eredeti Picasa (#7251).
+- A kereső az album neve alapján megtalálja a képeket; a javaslatlistában csak nem üres albumok szerepelnek, az album kiválasztásakor pedig megmarad a keresés. (#7263).
+
+## [1.0.156] - 2026-11-19
+
+- A telepítés utáni újraindításkor százalékos folyamatjelző mutatja az indulás előkészítésének előrehaladását (#7245).
+- A keresési javaslatok szósorára kattintva a mezőbe a szó és egy szóköz kerül, és a keresés lefut (#7253).
+
+## [1.0.155] - 2026-11-19
+
+## [1.0.154] - 2026-11-18
+
+- A keresési javaslatok szósorai mutatják, hány képen szerepel a szó, és a gyakoribb szó áll elöl, mint az eredeti Picasában. (#7242).
+
+## [1.0.153] - 2026-11-18
+
+- A dátummódosítás az EXIF mellett az XMP- és az IPTC-dátumot is átírja, mint az eredeti Picasa. (#7237).
+
+## [1.0.152] - 2026-11-18
+
+- A fotónézőben az Eszközök menü Configure Photo Viewer, Configure Screensaver és Back Up Pictures tétele szürke, mint az eredeti Picasában. (#7231).
+
 ## [1.0.151] - 2026-11-18
 
 - Az Eszközök menü dátummódosítója nézőben az aktuális képre, mappanézetben pedig az adott mappa képeire nyílik meg. (#7230).
