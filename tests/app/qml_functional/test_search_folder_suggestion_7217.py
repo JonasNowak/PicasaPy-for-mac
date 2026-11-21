@@ -10,6 +10,7 @@ from PySide6.QtTest import QTest
 from picasapy.index import open_index, sync_tree
 from tests.support.jpeg_factory import make_jpeg
 from tests.support.varakozas import var_feltetelre
+from tests.support.javaslatsor_kattintas import kattints_a_javaslatsorra
 
 
 def _wait(qt_app, predicate, timeout: float = 10.0) -> bool:
@@ -172,20 +173,29 @@ def test_search_suggestion_rows_and_folder_click_keep_search(qml_app, qt_app, tm
         )
 
     assert _wait(qt_app, _folder_ready)
-    suggestions = _value(popup, "suggestions")
-    folder_index = next(
-        index
-        for index, row in enumerate(suggestions)
-        if row["kind"] == "folder" and row["param"] == target
-    )
-    folder_row = next(
-        row for row in _walk(popup)
-        if row.objectName() == "suggestionRow"
-        and row.property("index") == folder_index
-    )
-    _click(window, folder_row, qt_app)
 
-    assert _wait(qt_app, lambda: controller.searchActive is True)
+    # #7317: a sort a TARTALMA alapján keressük, nem a lista egy korábbi
+    # pillanatképéből vett sorszámmal: a javaslatlista frissülhet a kettő
+    # között, és akkor a sorszám alatt már egy szójavaslat (pl. „ai8”) áll.
+    def _folder_row():
+        for row in _walk(popup):
+            if row.objectName() != "suggestionRow" or not row.isVisible():
+                continue
+            data = _value(row, "modelData") or {}
+            if data.get("kind") == "folder" and data.get("param") == target:
+                return row
+        return None
+
+    assert _wait(qt_app, lambda: _folder_row() is not None)
+    # #7324: a sor helye a lista újraépülése után áll be; addig a régi
+    # helyén egy szójavaslat állhat, és a kattintás arra esne.
+    kattints_a_javaslatsorra(window, popup, _folder_row, qt_app)
+
+    assert _wait(
+        qt_app,
+        lambda: controller.searchActive is True
+        and field.property("text") == "ai-folder ",
+    )
     assert field.property("text") == "ai-folder "
     assert controller.searchQuery == "ai-folder"
     assert controller.currentFolder == target

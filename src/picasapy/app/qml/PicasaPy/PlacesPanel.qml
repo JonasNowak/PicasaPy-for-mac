@@ -25,7 +25,10 @@ Rectangle {
     property var targetRows:
         panel.appWindow ? panel.appWindow.selectedIndexes : []
 
-    readonly property var markers: controller ? controller.geoMarkers : []
+    // A rejtett könyvtári panel ne járja végig a teljes feedet minden
+    // geoChanged jelzésnél; a jelölőket csak megnyitáskor kérjük le.
+    readonly property var markers:
+        panel.visible && controller ? controller.geoMarkers : []
     // Az eredeti címkereső online geokódolását helyi szűrés váltja ki:
     // képfájlnév, felirat, kulcsszavak és mappanév alapján keresünk a már
     // indexelt GPS-es képek között; a mező nem küld hálózati kérést.
@@ -180,7 +183,7 @@ Rectangle {
                     anchors.centerIn: parent
                     width: Math.min(parent.width - 24, 260)
                     visible: !!(mapLoader.item && mapLoader.item.offline)
-                    text: qsTr("PicasaPy failed to initialize Google Maps.  Please make sure that you are connected to the Internet.")
+                    text: qsTr("The map could not be loaded. Please make sure that you are connected to the Internet.")
                     font.pixelSize: Theme.fontSize
                     color: Theme.textGray
                     wrapMode: Text.WordWrap

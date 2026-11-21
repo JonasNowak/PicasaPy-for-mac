@@ -7,6 +7,73 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 
 ## [Nem kiadott]
 
+## [1.0.167] - 2026-11-21
+
+- A mappapanel képpontos ellenőrzése megvárja a kijelölt sor és a helyi menü kirajzolását (#7336).
+- A View options gomb saját menüt nyit, a nézet- és Shortcuts menük az eredeti sorrendet és tiltásokat követik, az Indexkép felirata pedig mnemonikus (#7340).
+- A Mappa menü négy rendezési parancsa egyszer átrendezi a kijelölt mappa képeit (#7341).
+
+## [1.0.166] - 2026-11-21
+
+- A HTML-oldal exportálása futás közben megszakítható; a Mégse előbb rákérdez, mint az eredeti Picasában (#7320).
+- A diavetítés sávján a lista végén megjelenik a nagyító ikon és egy csúszka, amellyel az aktuális kép nagyítható, a Következő nyíl pedig szürke, mint az eredeti Picasában (#7322).
+- Az Időrend kép nélküli könyvtárnál üzenettel zárva marad, a dátumsáv pontjai hónaponként logaritmikusan állnak, a fejléc húzás közben követi a fogantyút, és a nézet áttűnéssel nyílik és zár, mint az eredeti Picasában (#7323).
+- Kutatás: a Beállítások ablak útja az eredeti Picasában, a megjegyzett füllel és a gyorsítótár-ürítés pontos idejével (#7325).
+- Kutatás: a könyvtárnézet rendezésének és megjelenítésének menüi az eredeti Picasával összevetve (#7326).
+- Kutatás: a szerkesztő Alapjavítások eszközeinek útja az eredeti Picasában, a még mérendő pontok listájával (#7327).
+- A Beállítások ablak a legutóbb használt fülre nyílik, és ezt újraindítás után is megjegyzi, mint az eredeti Picasában (#7328).
+- Kutatás: mit tesz az eredeti Picasa a Beállítások fájltípus-váltása után, az OK megnyomásakor (#7329).
+- Kutatás: hová kerül a Beállításokban megadott importcél az eredeti Picasában, az OK megnyomása után (#7330).
+- Kutatás: mit tesz az eredeti Picasa az arcfelismerési küszöb megváltoztatása után, a Beállítások OK-jára (#7331).
+- A Beállítások „Clear cache files” jelölője az OK után azonnal üríti a memóriabeli bélyegképtárat, majd kikapcsolt állapotra áll vissza, mint az eredeti Picasában (#7332).
+- A bélyegkép-méret újraindítás után megmarad, és a Személyek-albumok külön méretet jegyeznek meg, mint az eredeti Picasában (#7333).
+- A Beállítások fájltípus-váltása az OK után azonnal frissíti a könyvtárat, mint az eredeti Picasában (#7338).
+
+## [1.0.165] - 2026-11-20
+
+### Javítva
+- Kiderült, honnan indul és milyen fájlokat ír a poszterkészítés az eredeti Picasában, és miben tér el tőle a PicasaPy (#7306) (#7306).
+- Kiderült, honnan nyílik és mit csinál az Ajándék-CD az eredeti Picasában, és miben tér el tőle a PicasaPy (#7305) (#7305).
+- Kiderült, hogy az eredeti Picasa diavetítő sávján látható csúszka a kép nagyítását állítja; azt, hogy pontosan mikor jelenik meg, még vizsgáljuk (#7284).
+- Kutatás: kiderült, mit állít az eredeti diavetítő sávjának képikonja és csúszkája, és mikor látszik (#7284).
+- A kollázs a kijelölt képeket teszi a vászonra, a mappa többi képét a kliplistára; kijelölés nélkül a teljes mappát veszi, és a mappafejléc gombja egyetlen kijelölt képnél is a teljes mappából indul, mint az eredetiben (#7293).
+- Kutatás: az Ajándék-CD folyamata az eredeti Picasán mérve, kijelölés nélküli indítással és a Mégse utáni újranyitással (#7305).
+- Kutatás: a poszter elkészülte utáni nézet az eredeti Picasán mérve (#7306).
+- Windowson az asztali háttér beállítása ugyanabban a sorrendben fut, mint az eredeti Picasában (#7312).
+- Kiderült, honnan indul és mit ír a HTML-oldal exportálása az eredeti Picasában, és miben tér el tőle a PicasaPy (#7313).
+- 800 px-es ablakban is elérhetővé váltak a diavetítő vezérlősávjának gombjai (#7314).
+- Az Ajándék-CD kijelölés nélkül az aktuális mappából indul, a diavetítő kapcsoló pedig Mégse után visszaáll (#7315).
+- A poszter elkészülte után az utolsó lap megnyílik szerkesztésre, mint az eredeti Picasában, és a forráskép kijelölve marad (#7316).
+- Belső javítás: két Windows-on ingadozó próba (a háttérszinkron türelmi ideje és a keresésből kilépés gombja) nem bukik többé véletlenszerűen (#7319).
+- Belső javítás: a diavetítő sávja nagyobb rendszerbetűvel is elfér 800 px-en, és négy próba nem bukik többé Windowson és Linuxon (#7334).
+
+## [1.0.164] - 2026-11-20
+
+- A diavetítés vezérlősávján a gombok az eredeti Picasa sorrendjében állnak: a forgatógombok az Előző előtt, a csillag a Következő után (#7281).
+- A diavetítés a mappában lévő videókat is lejátssza a mentett vágási pontok között, és utána lép tovább; korábban átugrotta őket (#7282).
+- A diavetítés képére kattintva most szüneteltethető vagy folytatható a lejátszás (#7285).
+- Kiderült, honnan indítható a kollázs az eredeti Picasában, és hogy a mappafejlécből indítva más képkészletet visz a vászonra, mint a PicasaPy (#7287) (#7287).
+- Kiderült, honnan és hogyan indítható a filmkészítés az eredeti Picasában, és miben tér el tőle a PicasaPy (#7288) (#7288).
+- Kiderült, hogyan kezeli az eredeti Picasa a személyeket és az arcokat; a PicasaPy folyamata a vizsgált pontokon egyezik vele (#7289).
+- Kiderült, hogyan dönti el az eredeti Picasa biztonsági mentése, mely képet kell újra menteni, és miben tér el ettől a PicasaPy; a két hibára külön jegy készült (#7290).
+- A biztonsági mentés a korábbi, írásvédett másolatot is felülírja a módosult képpel, ahogy az eredeti Picasa; ha egy fájl mentése nem sikerül, az a naplóba kerül, és a mentés a többi fájllal folytatódik (#7291).
+- A biztonsági mentés újra elviszi azt a képet, amelynek feliratát, csillagát vagy más adatát a legutóbbi mentés óta szerkesztetted, ahogy az eredeti Picasa (#7292).
+- A biztonsági mentés első megnyitásra magától létrehozza a "Saját mentési készlet" nevű CD/DVD készletet és kiválasztja, később pedig az utoljára használt készlettel nyílik meg, ahogy az eredeti Picasa (#7294).
+- A biztonsági mentés másolás előtt ellenőrzi a szabad helyet, és ha nem fér el, nem kezd bele, hanem szól, ahogy az eredeti Picasa (#7295).
+- A Film almenü normál sora mostantól „Kijelölésből...” feliratú (#7297).
+- Kiderült, hogy az eredeti Picasa az új mentési készletet üres névvel kezdi, és foglalt névnél nem engedi létrehozni; a javításra külön jegy készült (#7298).
+- A biztonsági mentés Új készlet űrlapja üres névvel nyílik, és a Létrehozás gomb tiltott üres vagy már létező névnél; szerkesztéskor a mentés típusa nem módosítható, a feliratok pedig a hivatalosak (#7299).
+- A Képek biztonsági mentése menüpont szürke, amíg a mentés vagy az Ajándék-CD panelje nyitva van, illetve amíg a másolás fut, ahogy az eredeti Picasában (#7300).
+- A biztonsági mentés Új készlet űrlapja CD/DVD típussal nyílik, mint az eredetiben, így a név beírása után a Létrehozás azonnal engedett; a mappa csak lemez-lemez típusnál kell (#7302).
+- Kiderült, honnan érhető el és hogyan működik a Helyek panel az eredeti Picasában, és miben tér el tőle a PicasaPy (#7303) (#7303).
+- A Helyek panel térképhibája már nem Google Mapset említ, hanem azt írja, hogy a térkép nem tölthető be, és ellenőrizni kell az internetkapcsolatot (#7304).
+- Kiderült, hova menti és hogyan állítja be az asztali hátteret az eredeti Picasa, és miben tér el tőle a PicasaPy (#7307) (#7307).
+- Belső javítás: a keresési mappajavaslat egyik próbája nem bukik többé véletlenszerűen (#7317).
+
+## [1.0.163] - 2026-11-20
+
+- Hálózati mappában (például NAS-on) a mappába lépés és a kép megnyitása a beolvasás közben sem fagyasztja le a programot (#7244).
+
 ## [1.0.162] - 2026-11-19
 
 - A kereső megtalálja a képek EXIF szerző és szerzői jog mezőinek szavait. (#7254).

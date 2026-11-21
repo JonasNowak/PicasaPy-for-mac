@@ -22,7 +22,14 @@ class _LibrarySyncRescanMixin:
     @Slot()
     def rescan(self) -> None:
         """Teljes újrapásztázás — a „Frissítés" menü kézi művelete."""
-        self._start_rescan(self._sync_worker)
+        self._start_rescan(self._manual_rescan_worker)
+
+    def _manual_rescan_worker(self) -> None:
+        """A kézi Frissítés minden fájl mtime-ját ellenőrzi a háttérben."""
+        from picasapy.index.sync import _manual_rescan_file_check
+
+        with _manual_rescan_file_check():
+            self._sync_worker()
 
     def _rescan_network_roots(self) -> None:
         """Az időzített teljes újraolvasás csak UNC-gyökereket pásztáz (#6696)."""
@@ -45,14 +52,20 @@ class _LibrarySyncRescanMixin:
         látott — ugyanaz a hibaosztály, mint a #1440-ben, csak másik
         belépési ponton.
 
-        **Kihagy, nem várólistáz.** A #1440 `_pending_dirty` várólistája ott
-        azért kell, mert egy KONKRÉT mappa jelzése veszne el; itt nincs
-        ilyen: a kézi teljes rescan vagy a hálózati gyökerek időzített
-        újraolvasása később újra próbál, a futó szinkron végén pedig
-        amúgy is frissül a nézet.
+        Az azonos szűrővel kért újraolvasás futó szinkron mellett kimarad.
+        Ha viszont az Opciók fájltípus-szűrője változott meg, a legújabb
+        pillanatképhez egy új teljes kör várólistára kerül.
         """
         if self._sync_running or self._dirty_running:
+            if self._dirty_running:
+                futoszuro = getattr(self, "_dirty_filetype_scan_snapshot", None)
+            else:
+                futoszuro = getattr(self, "_sync_worker_filetype_snapshot", None)
+            self._pending_filetype_rescan = (
+                futoszuro != getattr(self, "_filetype_scan_snapshot", None)
+            )
             return  # egy író elég; a futó szinkron végén úgyis frissülünk
+        self._pending_filetype_rescan = False
         # Az OpenCV-t itt szándékosan NEM töltjük elő: az indulás is teljes
         # újraolvasás, és az előtöltés üres könyvtárnál is betöltené (#6510
         # őre). Az MP4/MOV metaadata atom-olvasóval jön; a ritka egyéb
@@ -80,6 +93,15 @@ class _LibrarySyncRescanMixin:
                 name="picasapy-sync-rescan",
                 cancel=self.cancelScan,
             )
+
+    def _flush_pending_filetype_rescan(self) -> None:
+        """A futó szinkron alatti fájltípus-váltás után indít új teljes kört."""
+        if not getattr(self, "_pending_filetype_rescan", False):
+            return
+        if self._sync_running or self._dirty_running:
+            return
+        self._pending_filetype_rescan = False
+        self.rescan()
 
 
     def _sync_worker(

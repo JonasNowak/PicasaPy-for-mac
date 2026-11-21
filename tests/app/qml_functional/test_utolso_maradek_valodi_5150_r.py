@@ -32,7 +32,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from PySide6.QtCore import QMetaObject, QSettings, Qt, Slot
+from PySide6.QtCore import QMetaObject, QObject, QSettings, Qt, Signal, Slot
 from PySide6.QtTest import QTest
 
 import picasapy.app
@@ -230,6 +230,10 @@ class _GyujtemenyVezerlo(_StubController):
         return ""
 
 
+class _NetworkPropertiesController(QObject):
+    networkPropertiesChanged = Signal()
+
+
 @pytest.fixture
 def controller(qt_app):
     return _GyujtemenyVezerlo()
@@ -253,6 +257,11 @@ def test_a_keszlet_neve_valodi_billentyuzetrol_mentodik(mentes_host, qt_app):
 def test_a_cel_mappa_mezo_szerkesztheto_es_a_hostba_irodik(mentes_host, qt_app):
     view, host = mentes_host
     _ujkeszlet_urlap(view, host, qt_app)
+    # #7302: az űrlap CD/DVD típussal nyílik, ott a cél mező tiltott (az
+    # eredetiben is csak a lemez-lemez típusnál él), ezért a mappa
+    # beírásához előbb a lemez-lemez rádiót választjuk, valódi kattintással
+    assert keres(view, "backupSetTarget").property("enabled") is False
+    kattint(view, qt_app, "backupTypeDisk")
     assert keres(view, "backupSetTarget").property("enabled") is True
     kattint(view, qt_app, "backupSetTarget")
     kijelol_mindent(view, qt_app)
@@ -334,6 +343,17 @@ def test_a_cimke_mezo_enterrel_hozzaadja_a_cimkét(motor, qt_app):
     gepel(ablak, qt_app, "nyaralas")
     QTest.keyClick(ablak, Qt.Key.Key_Return)
     assert varj(qt_app, lambda: _ablak_lista(ablak, "hozzaadott") == ["nyaralas"])
+
+    dialog = keres(ablak, "keywordsDialog")
+    controller = _NetworkPropertiesController()
+    before = int(dialog.property("networkCacheRevision"))
+    dialog.setProperty("rowIndexes", [])
+    dialog.setProperty("controller", controller)
+    controller.networkPropertiesChanged.emit()
+    assert varj(
+        qt_app,
+        lambda: int(dialog.property("networkCacheRevision")) == before + 1,
+    ), "a QObject vezérlő hálózati jelzése nem frissítette a címkék gyorsítótárát"
 
 
 def test_a_film_felirat_mezo_valodi_gepeleessel_a_diakepbe_kerul(motor, qt_app):

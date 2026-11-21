@@ -2391,6 +2391,34 @@ picasapy-origin-key: collagepaneltext:Label(collagepanel/cancelbutton-label);gpu
 picasapy-origin-key: stringres:CRSSPrefs::updating</extracomment>
             <translation>bezig met publiceren...</translation>
         </message>
+        <message>
+            <location filename="../qml/PicasaPy/WebExportDialog.qml" line="312" />
+            <source>Do you want to cancel this operation?</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IBackgroundNotify::cancel</extracomment>
+            <translation>Wilt u deze bewerking annuleren?</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/WebExportDialog.qml" line="363" />
+            <source>Want to Cancel?</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IBackgroundNotify::canceltitle</extracomment>
+            <translation>Wilt u annuleren?</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/WebExportDialog.qml" line="366" />
+            <source>Cancel Operation</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IBackgroundNotify::cancelyesbutton</extracomment>
+            <translation>Handeling annuleren</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/WebExportDialog.qml" line="369" />
+            <source>Don't Cancel</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IBackgroundNotify::cancelnobutton</extracomment>
+            <translation>Niet annuleren</translation>
+        </message>
     </context>
     <context>
         <name>WebExportTemplatePane</name>
@@ -11828,16 +11856,17 @@ picasapy-origin-key: stringres:eMenuCreateMovie::ID_FACESRANDOM</extracomment>
             <translation>Van personenalbums...</translation>
         </message>
         <message>
+            <location filename="../qml/PicasaPy/PicasaCreateMenu.qml" line="63" />
+            <source>From Selection...</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:eMenuCreateMovie::MOVIE</extracomment>
+            <translation>Uit selectie...</translation>
+        </message>
+        <message>
             <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="255" />
             <source>Make a &amp;Poster...</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>Een &amp;poster maken...</translation>
-        </message>
-        <message>
-            <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="434" />
-            <source>New Movie...</source>
-            <extracomment>picasapy-origin: picasapy</extracomment>
-            <translation>Nieuwe film...</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="440" />
@@ -12976,6 +13005,13 @@ picasapy-origin-key: collagepaneltext:Label(collagepanel/min_spacing_label);prin
             <translation>Geen</translation>
         </message>
         <message>
+            <location filename="../qml/PicasaPy/PicasaViewMenu.qml" line="523" />
+            <source>&amp;None</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:eMenuView::ID_CAPNONE</extracomment>
+            <translation>&amp;Geen</translation>
+        </message>
+        <message>
             <location filename="../qml/PicasaPy/PicasaMenuBar.qml" line="133" />
             <source>People</source>
             <extracomment>picasapy-origin: picasapy</extracomment>
@@ -13138,10 +13174,9 @@ picasapy-origin-key: geopaneltext:Text(geopanel/loading_title)</extracomment>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PlacesPanel.qml" line="150" />
-            <source>PicasaPy failed to initialize Google Maps.  Please make sure that you are connected to the Internet.</source>
-            <extracomment>picasapy-origin: picasa
-picasapy-origin-key: stringres:geo::init_err</extracomment>
-            <translation>Google Maps kan niet door PicasaPy worden geïnitialiseerd. Zorg ervoor dat u verbinding heeft met internet.</translation>
+            <source>The map could not be loaded. Please make sure that you are connected to the Internet.</source>
+            <extracomment>picasapy-origin: picasapy</extracomment>
+            <translation>De kaart kan niet worden geladen. Zorg ervoor dat u verbinding heeft met internet.</translation>
         </message>
         <message>
             <location filename="../qml/PicasaPy/PlacesPanel.qml" line="96" />
@@ -15114,6 +15149,16 @@ picasapy-origin-key: stringres:CAcquireUI::allfilesfilter</extracomment>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:CAcquireUI::allfilesfilter</extracomment>
             <translation>Alle bestanden</translation>
+        </message>
+    </context>
+    <context>
+        <name>MainTimeline</name>
+        <message>
+            <location filename="../qml/PicasaPy/MainTimeline.qml" line="122" />
+            <source>You must have images in the Picture Tray to do this.</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_MUST_SELECT</extracomment>
+            <translation>Deze bewerking kan alleen worden uitgevoerd als het afbeeldingenvak afbeeldingen bevat.</translation>
         </message>
     </context>
     <context>
@@ -18384,6 +18429,24 @@ picasapy-origin-key: stringres:Album::ID_ALBUM_SELECTALLPICTURES</extracomment>
             <translation>&amp;Bureaublad</translation>
         </message>
         <message>
+            <source>My Do&amp;cuments</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:AlbumListWin::ID_VIEW_MYDOCS</extracomment>
+            <translation>Mijn do&amp;cumenten</translation>
+        </message>
+        <message>
+            <source>My &amp;Pictures</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:AlbumListWin::ID_VIEW_MYPICTURES</extracomment>
+            <translation>Mijn &amp;afbeeldingen</translation>
+        </message>
+        <message>
+            <source>My &amp;Computer</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:AlbumListWin::ID_VIEW_ALL</extracomment>
+            <translation>Mijn &amp;computer</translation>
+        </message>
+        <message>
             <source>&amp;Shortcuts</source>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:AlbumList::Shortcuts;stringres:eMenuView::Shortcuts</extracomment>
@@ -19827,6 +19890,12 @@ picasapy-origin-key: stringres:il_BurnPanel::ISOFolder</extracomment>
             <extracomment>picasapy-origin: picasapy</extracomment>
             <translation>De back-up kon niet worden teruggezet: %1</translation>
         </message>
+        <message>
+            <source>Not Enough Disk Space to Backup Files</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:il_BurnPanel::BackgroundProc::4</extracomment>
+            <translation>Onvoldoende schijfruimte voor back-ups</translation>
+        </message>
     </context>
     <context>
         <name>BackupHost</name>
@@ -19911,10 +19980,10 @@ picasapy-origin-key: options:options/labelgroup10.title</extracomment>
             <translation>Locatie voor back-ups kiezen</translation>
         </message>
         <message>
-            <source>OK</source>
+            <source>Create</source>
             <extracomment>picasapy-origin: picasa
-picasapy-origin-key: album:album/ok.title;autocomplete_errors:autocomplete_errors/ok.title;buttonmgr_text:Label(buttonmgr/ok);cdchoose:cdchoose/button10.title;contactmgr:contactmgr/ok.title;customaspectratio:customaspectratio/ok.title;foldermgr_text:Label(foldermgr/ok-label);gpuploader_about:gpuploader_about/okbutton.title;gpuploader_advoptions:gpuploader_advoptions/okbutton.title;gpuploader_options:gpuploader_options/okbutton.title;gpuploader_prefs:gpuploader_prefs/okbutton.title;imageproperties:imageproperties/button19.title;importweb:importweb/ok.title;input:input/button6.title;offsettime:offsettime/ok.title;options:options/button189.title;poster:poster/button18.title;printoptionstext:Label(printoptions/ok);quicktagconfig_text:Label(quicktagconfig/ok-label);resexport:win32:3;reviewprint:reviewprint/button14.title;stringres:ContactManagerDlg::OK;stringres:ContactManagerDlg::Ok;stringres:LighthouseUpdate:OK;stringres:il_OKButton;tooltips:Label(publish/replicate_go)</extracomment>
-            <translation>OK</translation>
+picasapy-origin-key: newbackupset:newbackupset/ok.title</extracomment>
+            <translation>Maken</translation>
         </message>
         <message>
             <source>Cancel</source>
@@ -19928,10 +19997,16 @@ picasapy-origin-key: tooltips:Label(publish/deletebackupset)</extracomment>
             <translation>Set verwijderen</translation>
         </message>
         <message>
-            <source>Backup Set</source>
+            <source>New Backup Set</source>
             <extracomment>picasapy-origin: picasa
-picasapy-origin-key: stringres:il_NewBkDialogTitle;tooltips:Text(publish/label_backupname)</extracomment>
-            <translation>Back-upset</translation>
+picasapy-origin-key: newbackupset:newbackupset/window1.title</extracomment>
+            <translation>Nieuwe back-upset</translation>
+        </message>
+        <message>
+            <source>Name:</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: newbackupset:newbackupset/labelgroup2.title</extracomment>
+            <translation>Naam:</translation>
         </message>
         <message>
             <source>Edit Backup Set</source>

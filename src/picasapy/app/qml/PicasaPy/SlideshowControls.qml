@@ -53,6 +53,19 @@ Item {
             }
         }
     }
+    // #7285: a teljes felület egérmozgás-figyelője fölött külön kattintási
+    // terület kapcsolja a normál vetítést. Lejátszáskor teljes magasságú,
+    // szünetben a `oneup.tre:20-23` szerinti H-97-nél ér véget. A `.tre`
+    // statikus bizonyíték, Picasa-futásmérés nélkül. A hover-kezelőt külön
+    // hagyjuk teljes méretűnek, hogy a sáv egérmozgásra szünetben is előjöjjön.
+    MouseArea {
+        objectName: "slideshowPlaybackToggleArea"
+        anchors.fill: parent
+        anchors.bottomMargin: slideshow.playing ? 0 : 97
+        enabled: !slideshow.screensaverMode && !slideshow.timelineSlideshow
+        acceptedButtons: Qt.LeftButton
+        onClicked: slideshow.togglePause()
+    }
     // #5649: az eredeti `oneup/auto2` teljes szélességű, 14 px magas
     // kattintósávja a vetítő tetején. Ugyanazt a műveletet hívja, mint a
     // lejátszás gomb; a `MouseArea` átlátszó, a képet nem takarja el.
@@ -158,7 +171,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 24
-        width: controlsRow.width + 24
+        width: Math.min(controlsRow.width + 24, controlsLayer.width - 16)
         height: 40
         radius: 6
         color: "#2b2b2bd9"
@@ -167,6 +180,26 @@ Item {
             id: controlsRow
             anchors.centerIn: parent
             spacing: 6
+            readonly property real preferredSliderSlotWidth: 157
+            readonly property real preferredTransitionWidth: 150
+            readonly property real minimumTransitionWidth: 90
+            // #7314: keskeny ablakban először a funkció nélküli, üres
+            // csúszkahely húzódik össze, utána (nagyobb betűs rendszeren,
+            // pl. Windowson, #7334) az átmenetválasztó, legfeljebb 90 px-ig.
+            // A többi elem a mért méretét tartja; széles ablakban a 157 és
+            // 150 px változatlan.
+            readonly property real fixedWidth: {
+                var total = spacing * Math.max(0, children.length - 1)
+                for (var i = 0; i < children.length; ++i) {
+                    if (children[i] !== imageSliderSlot
+                            && children[i] !== transitionBox)
+                        total += children[i].width
+                }
+                return total
+            }
+            readonly property real availableWidth: Math.max(
+                0, controlsLayer.width - 40 - fixedWidth)
+            width: fixedWidth + imageSliderSlot.width + transitionBox.width
             // egységes gombmagasság: a csillag nagyobb glifje (15px) ne
             // növessze meg a saját gombját a többihez képest
             readonly property int buttonHeight: 28
@@ -176,6 +209,95 @@ Item {
                 text: "✕ " + qsTr("Exit")
                 height: controlsRow.buttonHeight
                 onClicked: slideshow.stop()
+            }
+            // #7281: a mért sorrendben a képikon/csúszka helye a Kilépés
+            // után, a forgatópár előtt van. A hely 157 px: a mért
+            // `zoomup_icon` (24) + rés (6) + `zoomslider_container` (127).
+            // #7322: a lista végén megállt vetítésnél (nincs következő kép)
+            // itt a képikon és a csúszka áll; máskor a hely üres marad.
+            Item {
+                id: imageSliderSlot
+                objectName: "slideshowImageSliderSlot"
+                // #7322: a lista végén itt csúszka áll, tehát ilyenkor az
+                // átmenetválasztó húzódik össze előbb (legfeljebb 90 px-ig),
+                // és a hely csak a maradékból enged.
+                width: Math.max(
+                    0,
+                    Math.min(
+                        controlsRow.preferredSliderSlotWidth,
+                        controlsRow.availableWidth - (slideshow.listaVegen
+                            ? controlsRow.minimumTransitionWidth
+                            : transitionBox.width)
+                    )
+                )
+                implicitWidth: controlsRow.preferredSliderSlotWidth
+                height: controlsRow.buttonHeight
+
+                Item {
+                    objectName: "slideshowImageSliderContent"
+                    anchors.fill: parent
+                    visible: slideshow.listaVegen
+
+                    //: #7322: a szerkesztő nagyítóikonja (`editpanel/zoomup_icon`,
+                    //: a nézőben is ez a `loupe.svg`, ld. `TrayTopRow`). Díszítő
+                    //: ikon, nem vezérlő; a mért szélessége 24. A `loupe.svg`
+                    //: sötét vonalú, a vetítősáv sötét: világos lap kell alá,
+                    //: különben az ikon nem látszik.
+                    Rectangle {
+                        objectName: "slideshowImageSliderIcon"
+                        width: 24
+                        height: 18
+                        radius: 3
+                        color: Theme.mediaOverlayText
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        Image {
+                            source: "icons/loupe.svg"
+                            width: 24
+                            height: 16
+                            sourceSize.width: 24
+                            sourceSize.height: 16
+                            fillMode: Image.PreserveAspectFit
+                            anchors.centerIn: parent
+                        }
+                    }
+                    //: #7322: a szerkesztő nagyítócsúszkája (`zoomslider/scaleslider`)
+                    //: ugyanazzal a mért családdal, mint a néző alsó sávjában. Az
+                    //: érték [0, 1], a húzás a dia nagyítását állítja
+                    //: (`slideshow.imageZoomValue`), a diaindexet nem. Nem kap
+                    //: billentyűfókuszt: a nyilak és a szóköz a vetítőé maradnak.
+                    EditorSlider {
+                        id: imageSlider
+                        objectName: "slideshowImageSlider"
+                        csalad: "scaleslider"
+                        x: 30
+                        width: Math.max(0, parent.width - x)
+                        height: 27
+                        grooveInset: 3
+                        focusPolicy: Qt.NoFocus
+                        anchors.verticalCenter: parent.verticalCenter
+                        from: 0
+                        to: 1
+                        onMoved: slideshow.imageZoomValue = value
+                        // húzás közben a kéz vezet; egyébként az állapot
+                        Binding on value {
+                            when: !imageSlider.pressed
+                            value: slideshow.imageZoomValue
+                        }
+                    }
+                }
+            }
+            PicasaButton {
+                objectName: "slideshowRotateLeftButton"
+                text: "↺"; width: 34
+                height: controlsRow.buttonHeight
+                onClicked: slideshow.rotateCurrent(-1)
+            }
+            PicasaButton {
+                objectName: "slideshowRotateRightButton"
+                text: "↻"; width: 34
+                height: controlsRow.buttonHeight
+                onClicked: slideshow.rotateCurrent(1)
             }
             //: #5541: az eredetiben a `oneup.tre` 75-81. sorában a ◀ és a ▶▶ gombon
             //: `mousedown` van; a kezelőjük a `0x008032e0`. Ezért LENYOMÁSRA léptet,
@@ -198,31 +320,50 @@ Item {
                 onClicked: slideshow.togglePause()
             }
             //: #5541: ld. fent, a ◀ gombnál.
+            //: #7322: a lista végén megállt vetítésnél a nyíl szürke és tiltott
+            //: (`kepernyo__32`-`37`); a billentyűs Jobb (#7190) ettől még
+            //: visszafordít az első képre.
             PicasaButton {
                 objectName: "slideshowNextButton"
                 text: "▶▶"; width: 38
                 height: controlsRow.buttonHeight
+                enabled: !slideshow.listaVegen
                 lenyomasra: true
                 onClicked: slideshow.manualAdvance()
             }
             PicasaButton {
-                objectName: "slideshowRotateLeftButton"
-                text: "↺"; width: 34
+                objectName: "slideshowStarButton"
+                width: 34
                 height: controlsRow.buttonHeight
-                onClicked: slideshow.rotateCurrent(-1)
-            }
-            PicasaButton {
-                objectName: "slideshowRotateRightButton"
-                text: "↻"; width: 34
-                height: controlsRow.buttonHeight
-                onClicked: slideshow.rotateCurrent(1)
+                onClicked: slideshow.starCurrent()
+                contentItem: Text {
+                    text: "★"
+                    font.pixelSize: 15
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: slideshow.photosModel
+                           && (slideshow.photosModel.revision,
+                               slideshow.photosModel.starAt(slideshow.currentIndex))
+                           //: #3070: a diavetítés a hatókörön KÍVÜL van
+                           //: (11.7/3., NY-4), ezért a NYERS tokent olvassa —
+                           //: a megjelenítési mód a csillagot sem színezheti át
+                           ? Theme.nyers.starYellow : "#ffffff"
+                    style: Text.Outline
+                    styleColor: "#9a9a9a"
+                }
             }
             //: #433: az ÁTMENET-választó a vezérlősávban — az eredetiben is
             //: ott ül (`slideshowctrls/transtype`, a lebegő sáv alján).
             PicasaComboBox {
+                id: transitionBox
                 objectName: "slideshowTransitionBox"
                 height: controlsRow.buttonHeight
-                width: 150
+                width: Math.max(
+                    controlsRow.minimumTransitionWidth,
+                    Math.min(controlsRow.preferredTransitionWidth,
+                             controlsRow.availableWidth - (slideshow.listaVegen
+                                 ? imageSliderSlot.width : 0))
+                )
                 //: a lista a képernyő alján álló sáv fölé nyílik
                 popup.y: -popup.implicitHeight
                 model: slideshow.atmenetek.map(function (a) { return a.nev })
@@ -250,28 +391,6 @@ Item {
                         slideshow.feliratModok[(i + 1) % slideshow.feliratModok.length])
                 }
             }
-            PicasaButton {
-                objectName: "slideshowStarButton"
-                width: 34
-                height: controlsRow.buttonHeight
-                onClicked: slideshow.starCurrent()
-                contentItem: Text {
-                    text: "★"
-                    font.pixelSize: 15
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    color: slideshow.photosModel
-                           && (slideshow.photosModel.revision,
-                               slideshow.photosModel.starAt(slideshow.currentIndex))
-                           //: #3070: a diavetítés a hatókörön KÍVÜL van
-                           //: (11.7/3., NY-4), ezért a NYERS tokent olvassa —
-                           //: a megjelenítési mód a csillagot sem színezheti át
-                           ? Theme.nyers.starYellow : "#ffffff"
-                    style: Text.Outline
-                    styleColor: "#9a9a9a"
-                }
-            }
-
             //: #2992: a DIAIDŐ-blokk — az eredeti sávján `tpslabel`
             //: („Display Time"), `minusone`, `tps` (a szám) és `plusone`.
             //: A tulajdonos jelezte, hogy nálunk nem volt állítható.

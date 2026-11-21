@@ -18,10 +18,14 @@ _APP = _GYOKER / "src" / "picasapy" / "app"
 # albumtakarítás miatt változott.
 # #6695: a dirty-adag az explicit frissítési kérést is figyelembe veszi,
 # a teljes worker pedig az index/ini változását jelzi.
+# #7244: a kézi újraolvasás a fájl-mtime-okat háttérben ellenőrzi, hogy az
+# azonos mappa-mtime mellett átírt képet is frissítse.
+# #7338: a fájltípus-váltás a futó dirty-sync pillanatképét követő teljes
+# újraolvasást kér; az új kör a meglévő syncFinished útvonalon indul.
 _MOZGATOTT_FORRASOK = {
     # #6476: szándékos változás, a változatlan mappa célzott szinkronja kimarad
     ("library_controller_sync_dirty.py", "_LibrarySyncDirtyMixin", "_on_folders_dirty"):
-        "70c62407559ad934ef7c798ef3d2eba73767fd965bb69300139fe1cc3e17498b",
+        "668d84ad46a717fbd2eb41f014d90fa0fed30fbc251b761d6893b30553566434",
     # #7044: szándékos változás, a gyökérkeresés hálózati útvonalon nem old fel
     # (nincs `Path.resolve()`), a fő szál nem vár a hálózatra
     ("library_controller_sync_sweep.py", "_LibrarySyncSweepMixin", "_root_for_folder"):
@@ -43,7 +47,7 @@ _MOZGATOTT_FORRASOK = {
     ("library_controller_sync_sweep.py", "_LibrarySyncSweepMixin", "_stale_feed_folders"):
         "0601d410bcca2cd082900df88b0f8edad2e0af553f2027d7e48582c1312a8209",
     ("library_controller_sync_rescan.py", "_LibrarySyncRescanMixin", "rescan"):
-        "2f1d5760ed225142b887b30c65b70d8bc5f4a352dd7fdecd78694a2634d0b02b",
+        "f617a1550fbc0b6f42dd139c0da1f8795745da3fb15bbd3bb3bc553bb28e0dd0",
     ("library_controller_sync_rescan.py", "_LibrarySyncRescanMixin", "_sync_worker"):
         "0d8b4c19b48d127012deca61a38f3dc39712cdc8107001b0d28aab88c3a28ce8",
     (
@@ -55,7 +59,7 @@ _MOZGATOTT_FORRASOK = {
         "library_controller_sync_dirty.py",
         "_LibrarySyncDirtyMixin",
         "_flush_pending_dirty",
-    ): "7dc1a0a72d68dab3d1980fb825db9d06e89e1b10ae7b2bfe91b88244e980ced9",
+    ): "fce539b894a432c366ddb2ad72b9db672340e56cdfa51d2085ceb19a3b83876a",
     (
         "library_controller_sync_dirty.py",
         "_LibrarySyncDirtyMixin",

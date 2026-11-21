@@ -243,6 +243,9 @@ MenuBar {
     // NEM a `photoActionsEnabled`-ből élnek — az a rácsbeli kijelöléshez
     // kötött 27 fotó-műveletet vezérli, és azoknak tényleg kijelölés kell.
     property bool createActionsEnabled: false
+    //: #7315: az Ajándék-CD mappaforrással kijelölés és tálca nélkül is nyitható;
+    //: a főablak a nézőben tiltja (MainMenuBar)
+    property bool giftCdActionsEnabled: true
     // #4633: az Emberek-album filmhez nem kell kijelölt kép; a People-modell
     // csak olyan személyalbumokat tartalmaz, amelyeknek van alsó képlistája.
     readonly property bool hasPeopleAlbumMovieSources: {
@@ -253,11 +256,9 @@ MenuBar {
     // „Visszaállítás" és az „Utolsó mentés visszavonása" értelmetlen
     property bool hasSavedBackup: false
     //: #1637: a rejtettek feloldása jelszóval / a jelszó beállítása
-    //: #1421: az eszköztár `folderviewpopup` (▾) gombja UGYANEZT az
-    //: almenüt nyitja meg — a bináris `0x005e2000` kezelője a pár
-    //: scope-kulcsos függvényét hívja, a tételek a Mappanézet tételei
-    //: (`picasa-konyvtar-eszkoztar-viselkedes.md` 4/b). Egy definíció, két
-    //: belépési pont: a menü NEM készül újra az eszköztáron.
+    //: #7340: az eszköztár `folderviewpopup` (▾) gombja a külön
+    //: `FolderListContextMenu` példányt nyitja. A menüsáv Nézet ▸
+    //: Mappanézet almenüje ettől külön marad.
     function openFolderViewMenu(anchorItem) {
         if (!anchorItem) return
         menuView.openFolderViewMenu(anchorItem)

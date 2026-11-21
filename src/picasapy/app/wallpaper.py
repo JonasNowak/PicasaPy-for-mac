@@ -47,6 +47,7 @@ kimenet (#936).
 
 from __future__ import annotations
 
+import ctypes
 import logging
 import os
 import re
@@ -63,17 +64,15 @@ _log = logging.getLogger(__name__)
 # leállíthassuk, ne gyűljenek a rétegfelszínek.
 _swaybg_folyamat: subprocess.Popen | None = None
 
-#: #2985/#1775: a mért Windows-értékek. A `0`/`0` pár a KÖZÉPRE illesztés
-#: (nyújtás és mozaik nélkül) — ugyanaz, amit a Linux-lánc minden eleme kér.
+#: Az eredeti binárisban (0x0057aa10) mért Windows-értékek. A `0`/`0` pár
+#: a KÖZÉPRE illesztés (nyújtás és mozaik nélkül).
 _WINDOWS_STILUS: tuple[tuple[str, str], ...] = (
     ("WallpaperStyle", "0"),
     ("TileWallpaper", "0"),
 )
 
-#: `SystemParametersInfoW` állandói (`winuser.h`): a művelet és a két jelző.
+#: `SystemParametersInfoW` művelet (`winuser.h`).
 _SPI_SETDESKWALLPAPER = 0x0014
-_SPIF_UPDATEINIFILE = 0x01
-_SPIF_SENDCHANGE = 0x02
 
 # Az XDG asztalazonosítói. Külön konstansok, hogy az ág-választást a teszt
 # szándékos rontással is ellenőrizhesse.
@@ -184,15 +183,16 @@ def _windows_registry_setter(kulcs: str, ertek: str) -> None:
 
 
 def _windows_api(ut: str) -> bool:
-    """`SystemParametersInfoW(SPI_SETDESKWALLPAPER, …)` — a mért hívás."""
-    import ctypes
+    """`SystemParametersInfoW(SPI_SETDESKWALLPAPER, …, 0)` hívása.
 
+    A `ctypes` modulszintű fogantyú, hogy a teszt ezt cserélhesse a globális
+    `ctypes.windll` helyett (#1375, #7334)."""
     return bool(
         ctypes.windll.user32.SystemParametersInfoW(
             _SPI_SETDESKWALLPAPER,
             0,
             ut,
-            _SPIF_UPDATEINIFILE | _SPIF_SENDCHANGE,
+            0,
         )
     )
 
@@ -202,17 +202,18 @@ def _allitsd_be_windowson(
     registry_setter: Callable[[str, str], None],
     windows_api: Callable[[str], bool],
 ) -> str | None:
-    """A Windows-ág: előbb a stílus, aztán a rendszernek szólás (#2985).
+    """A Windows-ág: rendszerhívás, majd registry-írás (0x0057aa10).
 
-    A sorrend a mérésé (#1775): a stílus-értékek a registrybe mennek, és
-    az API-hívás `SPIF_UPDATEINIFILE | SPIF_SENDCHANGE` jelzővel frissíti
-    és szétkürtöli a változást. Bukásnál `None` — a hívó ilyenkor megmondja
-    a felhasználónak, hova került a BMP (#936).
+    Az eredeti bináris előbb `SystemParametersInfoW(0x14, 0, út, 0)`-t hív,
+    majd beírja a BMP útját és a két nulla stílusértéket. API-hibánál a
+    registry-írások után `None` tér vissza, így a hívó megőrzi a látható
+    hiba-visszajelzést (#936).
     """
     try:
-        for kulcs, ertek in _WINDOWS_STILUS:
+        api_sikeres = windows_api(ut)
+        for kulcs, ertek in (("Wallpaper", ut), *_WINDOWS_STILUS):
             registry_setter(kulcs, ertek)
-        if not windows_api(ut):
+        if not api_sikeres:
             _log.warning("a háttérkép beállítása nem sikerült: %s", ut)
             return None
     except Exception:  # noqa: BLE001 — a kudarc nem dönthet le semmit

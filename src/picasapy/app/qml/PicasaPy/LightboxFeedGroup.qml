@@ -77,9 +77,9 @@ Column {
             if (feed.appWindow && feed.appWindow.selectStarred)
                 feed.appWindow.selectStarred()
         }
-        //: #1006: ha a csoportban van kijelölt kép, a fejléc kollázsa
-        //: azokat adja át; csoporton belüli kijelölés nélkül a teljes
-        //: csoportot használja. A másik mappa kijelölése nem szivárog át.
+        //: #7293: legalább két csoporton belüli kijelölés kerül a vászonra;
+        //: nulla vagy egy kijelölésnél a teljes csoportot adja át. A másik
+        //: mappa kijelölése nem szivárog át.
         onCollageRequested: {
             if (!feed.appWindow || !feed.appWindow.openCollageFromRows)
                 return
@@ -92,7 +92,8 @@ Column {
                 if (kijeloltSor >= kezdet && kijeloltSor < veg)
                     sorok.push(kijeloltSor)
             }
-            if (sorok.length === 0) {
+            if (sorok.length < 2) {
+                sorok = []
                 for (var csoportSor = kezdet; csoportSor < veg; ++csoportSor)
                     sorok.push(csoportSor)
             }
@@ -224,6 +225,52 @@ Column {
         readonly property int windowCount: Math.max(0, Math.min(
             groupCol.modelData.count - windowStart,
             (lastRow - firstRow + 1) * feed.columns))
+        // A látható képernyő és az aktív előrebetöltési puffer cellái
+        // egyszerre készülnek el, hogy görgetés vagy sorra ugrás után is
+        // rögtön kattinthatók legyenek. A távolabbi cellák külön eseményköri
+        // lépésekben jönnek létre, így a nagy feed mellett is reagál a menü.
+        readonly property int initialMaterializedCount: Math.min(
+            windowCount,
+            (Math.ceil(feed.height / Math.max(1, feed.cellHeight))
+                + bufferRows * 2) * feed.columns)
+        property int materializedWindowCount: initialMaterializedCount
+        Timer {
+            id: materializeWindowTimer
+            interval: 16
+            repeat: false
+            onTriggered: {
+                if (groupFlow.materializedWindowCount
+                        >= groupFlow.windowCount)
+                    return
+                groupFlow.materializedWindowCount = Math.min(
+                    groupFlow.windowCount,
+                    groupFlow.materializedWindowCount
+                        + 1)
+                if (groupFlow.materializedWindowCount
+                        < groupFlow.windowCount)
+                    restart()
+            }
+        }
+        onWindowCountChanged: {
+            if (materializedWindowCount < initialMaterializedCount)
+                materializedWindowCount = initialMaterializedCount
+            if (materializedWindowCount < windowCount
+                    && !materializeWindowTimer.running)
+                materializeWindowTimer.start()
+        }
+        onInitialMaterializedCountChanged: {
+            if (materializedWindowCount < initialMaterializedCount)
+                materializedWindowCount = initialMaterializedCount
+            if (materializedWindowCount < windowCount
+                    && !materializeWindowTimer.running)
+                materializeWindowTimer.start()
+        }
+        Component.onCompleted: {
+            if (materializedWindowCount < initialMaterializedCount)
+                materializedWindowCount = initialMaterializedCount
+            if (materializedWindowCount < windowCount)
+                materializeWindowTimer.start()
+        }
         // #1148: lasszó a képfolyam ÜRES részéről is. Az eredetiben a
         // lasszó ÉPP az üres területre való lenyomásra indul
         // (`0x00719d4b`) — a kijelölt képről indított húzás ott is
@@ -298,7 +345,8 @@ Column {
             }
         }
         Repeater {
-            model: groupFlow.windowCount
+            model: Math.min(
+                groupFlow.windowCount, groupFlow.materializedWindowCount)
             delegate: Item {
                 id: slot
                 objectName: "feedCell"

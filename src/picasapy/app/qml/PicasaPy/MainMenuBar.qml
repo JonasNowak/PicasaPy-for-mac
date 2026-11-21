@@ -43,6 +43,18 @@ PicasaMenuBar {
     required property var hostTrayBar
     required property var hostWebExportDialog
     required property var hostXmpFacesWriteDialog
+    // #7315: az Ajándék-CD módhoz nem kell kijelölt kép vagy tálcaelem;
+    // a panel az aktuális mappát választja ki alapértelmezésként.
+    giftCdActionsEnabled: !hostWindow.viewerOpen
+    property int networkCacheRevision: 0
+
+    Connections {
+        target: mainMenuBar.hostController
+        ignoreUnknownSignals: true
+        function onNetworkPropertiesChanged() {
+            mainMenuBar.networkCacheRevision += 1
+        }
+    }
 
     textEntryHasFocus: hostWindow._szovegmezoneVanFokusz
     searchOptionsOpen: hostToolbar.searchOptionsOpen
@@ -181,8 +193,9 @@ PicasaMenuBar {
     // a textactive= láthatósága nem változtatja meg a réteg meglétét.
     hasSelectedTextLayer: (hostController
                            && hostController.hasTextLayerInSelection !== undefined)
-                          ? hostController.hasTextLayerInSelection(
-                                hostWindow.photoActionRows()) : false
+                          ? (mainMenuBar.networkCacheRevision,
+                             hostController.hasTextLayerInSelection(
+                                 hostWindow.photoActionRows())) : false
     hasTextLayerClipboard: (hostController
                             && hostController.hasTextLayerClipboard !== undefined)
                            ? hostController.hasTextLayerClipboard : false
