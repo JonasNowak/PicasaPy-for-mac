@@ -17338,6 +17338,13 @@ picasapy-origin-key: stringres:IDS_CROP_LABEL;stringres:filter_crop64_label0;str
         </message>
         <message>
             <location filename="../qml/PicasaPy/EditorTabCommonFixes.qml" />
+            <source>Recrop</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_RECROP_LABEL</extracomment>
+            <translation>ครอบตัดอีกครั้ง</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/EditorTabCommonFixes.qml" />
             <source>Straighten</source>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:filter_tilt_label0;tooltips:Label(editpanel/horizonadjust)</extracomment>
@@ -21721,6 +21728,100 @@ picasapy-origin-key: stringres:CThumbUI::ConfirmImmediateDeletion::Delete</extra
 picasapy-origin: picasa
 picasapy-origin-key: stringres:CThumbUI::ConfirmImmediateDeletion::Message</extracomment>
             <translation>ไม่สามารถย้ายไฟล์นี้ไปที่ถังขยะได้และจะถูกลบทันที คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ</translation>
+        </message>
+    </context>
+    <context>
+        <name>FolderListModel</name>
+        <message>
+            <location filename="../model_helpers.py" line="190" />
+            <source>Updated</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CAlbumBuilder::updated</extracomment>
+            <translation>ล่าสุด</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>January</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:January</extracomment>
+            <translation>มกราคม</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>February</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:February</extracomment>
+            <translation>กุมภาพันธ์</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>March</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:March</extracomment>
+            <translation>มีนาคม</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>April</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:April</extracomment>
+            <translation>เมษายน</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>May</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:May</extracomment>
+            <translation>พฤษภาคม</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>June</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:June</extracomment>
+            <translation>มิถุนายน</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>July</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:July</extracomment>
+            <translation>กรกฎาคม</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>August</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:August</extracomment>
+            <translation>สิงหาคม</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>September</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:September</extracomment>
+            <translation>กันยายน</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>October</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:October</extracomment>
+            <translation>ตุลาคม</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>November</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:November</extracomment>
+            <translation>พฤศจิกายน</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>December</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:December</extracomment>
+            <translation>ธันวาคม</translation>
         </message>
     </context>
 </TS>

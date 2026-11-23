@@ -17369,6 +17369,13 @@ picasapy-origin-key: stringres:IDS_CROP_LABEL;stringres:filter_crop64_label0;str
         </message>
         <message>
             <location filename="../qml/PicasaPy/EditorTabCommonFixes.qml" />
+            <source>Recrop</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:IDS_RECROP_LABEL</extracomment>
+            <translation>Przytnij ponownie</translation>
+        </message>
+        <message>
+            <location filename="../qml/PicasaPy/EditorTabCommonFixes.qml" />
             <source>Straighten</source>
             <extracomment>picasapy-origin: picasa
 picasapy-origin-key: stringres:filter_tilt_label0;tooltips:Label(editpanel/horizonadjust)</extracomment>
@@ -21752,6 +21759,100 @@ picasapy-origin-key: stringres:CThumbUI::ConfirmImmediateDeletion::Delete</extra
 picasapy-origin: picasa
 picasapy-origin-key: stringres:CThumbUI::ConfirmImmediateDeletion::Message</extracomment>
             <translation>Tego pliku nie można przenieść do Kosza. Zostanie on usunięty natychmiast. Czy na pewno chcesz kontynuować?</translation>
+        </message>
+    </context>
+    <context>
+        <name>FolderListModel</name>
+        <message>
+            <location filename="../model_helpers.py" line="190" />
+            <source>Updated</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:CAlbumBuilder::updated</extracomment>
+            <translation>Zaktualizowano</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>January</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:January</extracomment>
+            <translation>Styczeń</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>February</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:February</extracomment>
+            <translation>Luty</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>March</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:March</extracomment>
+            <translation>Marzec</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>April</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:April</extracomment>
+            <translation>Kwiecień</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>May</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:May</extracomment>
+            <translation>Maj</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>June</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:June</extracomment>
+            <translation>Czerwiec</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>July</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:July</extracomment>
+            <translation>Lipiec</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>August</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:August</extracomment>
+            <translation>Sierpień</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>September</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:September</extracomment>
+            <translation>Wrzesień</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>October</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:October</extracomment>
+            <translation>Październik</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>November</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:November</extracomment>
+            <translation>Listopad</translation>
+        </message>
+        <message>
+            <location filename="../model_helpers.py" line="34" />
+            <source>December</source>
+            <extracomment>picasapy-origin: picasa
+picasapy-origin-key: stringres:December</extracomment>
+            <translation>Grudzień</translation>
         </message>
     </context>
 </TS>
