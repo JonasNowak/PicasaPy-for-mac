@@ -32,6 +32,14 @@ class _SessionEffectsMixin:
         new_op = _new_op("tilt", ("1", f"{param:.6f}", f"{scale:.6f}"))
         return self._with_single_layer(lambda op: op.matches("tilt"), new_op)
 
+    def append_tilt(self, param: float, scale: float) -> EditSession:
+        """Új `tilt` tag a lánc VÉGÉRE (#7393), sosem cserél: az eredeti minden
+        Alkalmaz-nál új tagot fűz (job-913: `tilt=1,0.391249,0.000000;
+        tilt=1,-0.399233,0.000000;`), a render-lánc sorban alkalmazza őket.
+        A `set_tilt` (az első `tilt` helyén cserél) a többi hívónak marad."""
+        new_op = _new_op("tilt", ("1", f"{param:.6f}", f"{scale:.6f}"))
+        return EditSession(ops=self.ops + (new_op,))
+
     def clear_tilt(self) -> EditSession:
         """Tilt eltávolítása."""
         new_ops = [op for op in self.ops if not op.matches("tilt")]
@@ -190,6 +198,15 @@ class _SessionEffectsMixin:
         new_op = _new_op("fill", ("1", f"{value:.6f}"))
         return self._with_single_layer(lambda op: op.matches("fill"), new_op)
 
+    def append_fill(self, value: float) -> EditSession:
+        """Új `fill=1,<érték>` réteg a lánc VÉGÉRE (#7397).
+
+        Az eredeti Picasa a Gyakori javítások Derítőfény-csúszkájának húzásakor
+        a betöltött `fill` mellé újat fűz (E27: `fill=1,0.5;fill=1,0.523364;`,
+        a két réteg halmozódik). Sosem cserél: a `set_fill` a többi hívónak
+        marad (az az első `fill` helyén cserél)."""
+        return EditSession(ops=self.ops + (_new_op("fill", ("1", f"{value:.6f}")),))
+
     def clear_fill(self) -> EditSession:
         """A `fill` réteg eltávolítása (a `finetune2` érintetlen marad)."""
         return EditSession(ops=tuple(op for op in self.ops if not op.matches("fill")))
@@ -224,14 +241,25 @@ class _SessionEffectsMixin:
         - egyébként (finetune2 a lánc közepén) `None` — a hívó ilyenkor a
           normál CPU-előnézetre esik vissza, GPU-gyorsítás nélkül.
 
-        **#551: nem nulla Derítőfénynél is `None`.** A mérés kimondta, hogy
-        a Derítőfény a pixel VILÁGOSSÁGÁTÓL függő hozzáadás, nem
-        csatornánkénti tónusgörbe — a GPU pontonkénti (LUT-textúrás) útja
-        ilyenkor a CPU-tól eltérő képet adna, ezért nem alkalmazható.
+        **#551, #7400: nem nulla Derítőfénynél vagy nem semleges pipettánál is `None`.**
+        A mérés kimondta, hogy a Derítőfény világosság-függő, a semlegesítő pipetta
+        pedig 3×3-as CAT mátrix (kereszt-tagokkal), nem csatornánkénti tónusgörbe —
+        a GPU pontonkénti (LUT-textúrás) útja ilyenkor a CPU-tól eltérő képet adna,
+        ezért nem alkalmazható.
         """
         for index, op in enumerate(self.ops):
             if op.name.casefold() in _FINETUNE_NAMES:
-                if index == len(self.ops) - 1 and _finetune_float(op, 1) == 0.0:
+                neutral = op.params[4] if len(op.params) > 4 else None
+                has_neutral = (
+                    neutral is not None
+                    and len(neutral) == 8
+                    and not neutral.startswith("00")
+                )
+                if (
+                    index == len(self.ops) - 1
+                    and _finetune_float(op, 1) == 0.0
+                    and not has_neutral
+                ):
                     return self.ops[:index]
                 return None
         return self.ops

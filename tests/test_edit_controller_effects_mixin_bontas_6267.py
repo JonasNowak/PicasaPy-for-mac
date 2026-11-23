@@ -65,41 +65,44 @@ _EREDETI_FORRAS_SHA256 = {
     "method:enhanceEnabled": "05c96197115ad1f7bff04c2b907e21dbc9d880ba08111067479ef66244555ca5",
     "method:autolightEnabled": "b763c707983e1322cb80a8d896f17e9a0d756610ca4779402e592b54a051094b",
     "method:autocolorEnabled": "da0d9a935df126b1d4cfbf2198b7c2ad7b6874cfbde3fca93eb6f5aa84739ecf",
-    "method:tiltParam": "7e1bef898e69dde9dad1630a360089cede2e133726501b3b53c2c69ba2fce365",
+    # #7393: a tiltParam csak a „van-e kiegyenesítés" jelzés (a csúszkát nem tölti)
+    "method:tiltParam": "506fecafe7e90a003ec4ffeb3632ec65dd1110f340ae9c3385f606acac5c9716",
     "method:fillLight": "ed988744d8fd4b2fb671864fbab3038ec1cb8cc1b79810682309a0b735abb10e",
-    # #7369: a Gyakori javítások Derítőfénye külön `fill` réteg (a `finetune2`-től független)
+    # #7369: a Gyakori javítások Derítőfénye külön `fill` réteg (a `finetune2`-től független);
+    # #7397: a húzás új `fill` réteget fűz (a `_session_with_fill` a Derítőfény-látogatás mixinbe költözött)
     "method:fixesFillLight": "4baed149da6d233ef5a706f7fd0aab6e20d170f37df73a0d5e8a10fe5c3097c5",
-    "method:previewFixesFill": "5b1d112aa385dbe1f3085d9ed9fb7a96fd5cb74a11500f640148a8180f2e8799",
-    "method:setFixesFill": "376a50db5918f564fa647fee0c53f05aec179dcac1a66148cbfe5a3e351058d1",
-    "method:_session_with_fill": "3ce319b623cb4dde7e5fe580e813945c6be5a719ee0b7054f976c20c63444ddb",
+    "method:previewFixesFill": "3661e240c4115a3f534fffefbca54a26f1d94a70aee0d883d165a9114728b736",
+    "method:setFixesFill": "c378fc01f2df43d2002aa06bb5aa4f6749e291a30f29387c035f6e9c70c994ec",
     "method:highlights": "10daf37e5d133de924ac0e7d386c0887120582eb880cb6e9046479e39e91957f",
     "method:shadows": "87b72d5c09e4daeea2562d8e060e453dcd8293dcafd76e832a32e0516492db7b",
     "method:colorTemp": "c190cffd835daadf8e5cc9519d497bec5c27717fcecb0aad9c9a9115e7f29813",
     "method:neutralColor": "34fcbc16b64cab4c180cc40ce1c53a159c441f6dce6fb14aa317ab7fd90509eb",
     "method:hasFinetune": "a1ae4e36ce02307c4f7d99c6b9b0992b106da8f07a2963fc7504727136ffdfdf",
-    "method:setTilt": "9599a9d657f3d5fd6401d67f6d116cc1b6f138477596ae8a12b92be5bb505254",
-    "method:previewTilt": "3ffe40fa6bd7583c71fd5c84036c1ef43dadb53089603b1056cf90e4b8ddc287",
+    # #7393: a mentés és az előnézet új tilt tagot fűz a lánc végére (nem cserél)
+    "method:setTilt": "f3fcd51e00e05e2affc06b16f4d4c8be714905d2aae07dd21877c198793153a3",
+    "method:previewTilt": "2e27f0dd84229e8d4bbade33d13bf6b609f5904f5b72e81ad55ab292f1011f87",
     "method:discardTiltPreview": "9e5f4ce898d96640cff35de190c46d9a9d311d9d9e9b6e2798b3d180425a78aa",
     "method:previewFinetune": "f18330782af266eaebb44aa0cde3c43033c4f1fe40a73738b9d14ffecbbc4604",
-    "method:previewFinetuneGpu": "fc7728438ca1b543ca6932e4b61e8eeeca3b751623034fa9658d518ba5653528",
+    "method:previewFinetuneGpu": "ed1a9d9866e61f1f322c762a42a05702d0a0141ad8780c18c477c7679f10ec8d",
     "method:setFinetune": "3117e12d363f402881570a6c3180662f8274768627b38e5990f36e8ca33f26f6",
-    "method:applyEffect": "98af0d726e268e41b042b6e1963bfc35c9a95d1add2f80e631c7ed2b5c212c27",
+    "method:applyEffect": "1f42e6a58a0b3004cd0ed92ba540f3a32a8a85e50b122709b809ad8601a079ea",
     "method:effectHasParams": "093e48a706f64a6902a858cb22229e08abb2add1621c1a94bc1f487ad5534a7d",
     "method:effectParams": "7d399177dc974d6ec3e7c0008ae908b63a5169708c8ec47ddb254c4f42611a66",
     # #6685: a revision csak a háttér-render elkészültekor lép, nem azonnal.
     "method:previewEffect": "c973db81f4f615e3abf64e4243c202a112ee745168451223d5c8a30788ca4c9e",
-    "method:discardEffectPreview": "024721e1a7fe86b0f1ab0b2899e6573c0825f2563ef9e297c3afa24babee6cc1",
-    "method:applyEffectWithParams": "ded91fbb793684be76859b96d1ae53bdbf98563a51b0b2e686feb8da1af32552",
+    "method:discardEffectPreview": "7dd9e1c1281544cee971d805d6974895ae656627d239598da4cc2d4bdb730727",
+    "method:applyEffectWithParams": "c9af74d647baa38f3023de9a8112f90ce02c601747a8d1453464f21ad04b16b8",
     "method:_session_with_effect": "b464866f2c399980312a8784e00a113933a3bbe907629dd28b7de1044a46918e",
     "method:_finetune_field": "79728f2475a5a708354fcac8a92144d6c0694ca6c72f30c1fed51778edfa1a1d",
-    "method:pickNeutralColor": "2d88180fa236c4d687c98f11dfcac34b0f7bf7fc09d08e2cf2f1d1e326353447",
+    # #7385: a pipetta a finetune2 réteg ELŐTTI lánc képéből mintáz
+    "method:pickNeutralColor": "4c5bddb961b15522c6b28857689f99508894e7fd14e220555f80a6bef555bab3",
     "method:pickEffectColor": "9bc9106f540a20fb9223155e3d2471ad94561caccc3c77f2bd444b349a19ea52",
     "method:figyeldAShiftet": "43741eeb4fbedcddeb9d872b43224b390c9ccb6589834db9451ec3be10227561",
     "method:_allitsd_a_shiftet": "9a38ce944af8830ccd6deb106628ca92a00eef74845ca2d0538d8196d38746a7",
     "method:shiftAktiv": "5ff73952e946c6ccb49eff1afb96cecd134bcd47dd198ba2b8d1f8e2e21ccdaa",
     "method:shiftLenyomva": "a30294d1954188418f2d107f5e247e307989a6e2f3a844af021e4328bbf32f80",
     "method:applyColorWand": "974f2269fb4bed0762c408f3b9e1cab2375b6edaf47f324051d060f450ac477f",
-    "method:_gpu_lut_for": "efef115f57051dc80c058c28ecbfa219b2f48b405fc68d023e47f3048d47c383",
+    "method:_gpu_lut_for": "0d9d78eb5007139cbdb925bb0f7d6cf9666ead86f39f4ed2ca3c0a811a5c0ad0",
 }
 
 # A #6267 előtti Qt-lenyomat, csak a mixincsalád saját tagjai. Szándékosan nincs
