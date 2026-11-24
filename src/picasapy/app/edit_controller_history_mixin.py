@@ -25,7 +25,7 @@ class EditControllerHistoryMixin:
 
     @Property(bool, notify=_Signals.canUndoChanged)
     def canUndo(self) -> bool:
-        return bool(self._undo_stack)
+        return bool(self._undo_stack) and not self._save_undo_pending
 
 
     @Property(bool, notify=_Signals.canRedoChanged)
@@ -77,6 +77,13 @@ class EditControllerHistoryMixin:
         if not self._undo_stack:
             return
         self._require_active()
+        if self._undo_stack[-1][1] == "save":
+            if self._save_undo_pending:
+                return
+            self._save_undo_pending = True
+            self.toolsChanged.emit()
+            self._undoSaveRequested.emit(str(self._image_path))
+            return
         previous_value, action = self._undo_stack.pop()
         if action in _REDO_NELKULI_MUVELETEK:
             self._redo_stack.clear()
@@ -88,6 +95,29 @@ class EditControllerHistoryMixin:
         self.toolsChanged.emit()
         self.viewerInfoShortRequested.emit(False)
         self._end_finetune_visit()
+
+
+    def _record_save_undo(self) -> None:
+        """A sikeres lemezmentést az Undo-verem tetejére teszi (#7408)."""
+        self._undo_stack = [(self._session.to_value(), "save")]
+        self._redo_stack.clear()
+        self._save_undo_pending = False
+        self.toolsChanged.emit()
+
+
+    def _finish_save_undo(self, succeeded: bool) -> None:
+        """Az Undo Save sikerénél az Undo-vermet a visszaállított láncból építi
+        újra, hibánál újrapróbálhatóvá teszi (#7416).
+
+        Az eredeti az Undo Save után a lánc szerint állítja be a gombot
+        (job-940 `__20`): láncszerkesztésnél (Kiegyenesítés) „Undo Straighten"
+        és aktív, szövegnél (nincs lánc-elem) tiltott és csupasz (job-919
+        `__22`). A Redo-verem üres marad (`__22`: a Redo tiltott)."""
+        if succeeded:
+            self._undo_stack = self._seed_undo_from_chain(self._session)
+            self._redo_stack.clear()
+        self._save_undo_pending = False
+        self.toolsChanged.emit()
 
 
     @Slot()

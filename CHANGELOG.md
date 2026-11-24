@@ -7,6 +7,30 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 
 ## [Nem kiadott]
 
+## [1.0.178] - 2026-11-24
+
+### Javítva
+- Kutatás: az eredeti Picasa Beállítások OK ága csak a javaslatküszöb (`FRSuggestionThreshold`, `FRSuggestionSingleThreshold`) változásakor egyezteti a személyalbumok címketagságát, ütemez háttérmunkát és állítja a panel frissítési jelzőjét; a #7325 "minden OK-n" állítása pontosítva, fejlesztői jegytörzzsel, a fejlesztés a #7373 jegyen (#7331).
+- Kutatás: a negyedik javított felvételkör (job-939..943) kimérte, hogy a Vágás kiegyenesített képen a téglalapot a forrásképen tárolja és az eredmény a kivágott ablakra újra alkalmazott kiegyenesítés (a mai render ugyanabból az ini-ből 501×180 helyett 371×167-es képet ad), hogy az Undo Save után az Undo-gomb a lánc szerint áll vissza (Kiegyenesítésnél „Undo Straighten” aktív), hogy a szöveg szerkesztése önmagában nem változtat a geometrián és a forgatás szöge nem szalad rá a 15°-ra, és hogy az 1:1 gomb a Retusálásban 100%-ra nagyít; két új fejlesztői jegytörzs a lapon, két javított lépéssor a megmaradt hiányokhoz (#7327).
+- Kutatás: a fájltípus-váltás utáni katalóguskezelés feltárása az eredeti Picasában (#7339).
+- Kutatás: lezártam a Hangolás-paritás felmérését, rögzítettem a pipetta 5x5-ös mintáját és a többes kijelölés Enter/helyi menü eltérését (#7345).
+- A Beállítások párbeszédpanelen a javaslatküszöb módosítása és az OK után azonnal frissülnek a Személyek panel névjavaslatai (#7373).
+- Kutatás: a Hangolás Színhőmérséklet-csúszkája pipetta nélkül bitre az eredeti képletét követi, az eredeti kód futtatásával igazolva (#7403).
+- Több kép kijelölésekor az Enter és a kép helyi menüje a rács szerinti első kijelölt képet nyitja meg (#7412).
+- Kiegyenesített képen a Vágás a forráskép koordinátáiban vág, és a kivágott részre alkalmazza újra a kiegyenesítést, mint az eredetiben (#7415).
+- Az Undo Save után a szerkesztő Undo gombja a visszaállított szerkesztési láncból épül: Kiegyenesítés után „Undo Straighten" és aktív, a Redo tiltott; szövegszerkesztés után az Undo továbbra is tiltott és csupasz (#7416).
+
+## [1.0.177] - 2026-11-23
+
+- Kutatás: a harmadik javított felvételkör (job-917..925) kimérte az eredeti Retusálás-ecset leképezését (a csúszka lineáris, a kör sugara 100 × csúszkaállás × nagyítás képpont, a kép méretétől független, induláskor 25 forrásképpont a középen álló csúszka mellett), megmutatta, hogy a Mentés utáni „Undo Save” a Mentés előtti állapotot állítja vissza, hogy a Clear All utáni Cancel visszahozza a szöveget, hogy a Kiegyenesítés csúszkája ±1-ig lineáris és minden Apply külön visszavonási lépés, és hogy a Vágás kiegyenesített képen sehol nem figyelmeztet; a véglegesített ecsetméret-jegytörzs és három új fejlesztői jegytörzs a lapon, öt javított lépéssor a megmaradt hiányokhoz (#7327).
+- Kutatás: a szerkesztő három Effektek lapja folyamatának futásidejű paritása (#7346).
+- A Vágás panel elrendezése és kijelölés nélküli gombállapota az eredetihez igazodik (#7394).
+- A Mappa ▸ Rendezés ▸ Legutóbbi változtatások menütétel ismételt kattintással vagy a bal hasáb átrendezésével kikapcsolható, visszaadva a rács rendezését a hasábnak (#7396).
+- A Retusálás ecsetkörének sugara az eredeti Picasa szerint alakul: a csúszka lineárisan szabályozza (induláskor a fogantyú középen áll, a kör 25 forrásképpont sugarú), a megjelenített kör a nagyítással arányos (legalább 3 képpont sugarú), és a forrásképi sugár a kép méretétől független; a mentett folt ugyanekkora forrásképi sugarat kap, a `retouch=2` formátum változatlan (#7406).
+- A Szöveg eszköz Clear All gombja eszközön belüli piszkozat lett, amelyet a Cancel visszahoz, az Apply pedig véglegesít (#7407).
+- Mentés után a szerkesztő Undo Save gombja visszavonja a mentést, a szerkesztések megmaradnak (#7408).
+- A Ragyogás (Glow) effekt Radius csúszkája az eredetivel egyező 3,0 kezdőértékkel nyílik meg (#7410).
+
 ## [1.0.176] - 2026-11-23
 
 - A Vörösszem panel gombsora és megjegyzése az eredeti Picasa elrendezését követi, és a szerkesztő fülsávja az eszközpanelek fölött is látszik (#7386).
@@ -51,7 +75,6 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 ## [1.0.171] - 2026-11-23
 
 - Kutatás: az újravágás szabályának helyesbítése: az eredeti Picasa a lánc végén álló vágást helyben frissíti (két egymás utáni vágást egy visszavonás vesz vissza), más művelet után viszont új vágást fűz hozzá; a látható visszavonás és újra állapot felvétele még hátra van (#7327).
-- Kutatás: az eredeti Picasa Beállítások OK ága csak a javaslatküszöb (`FRSuggestionThreshold`, `FRSuggestionSingleThreshold`) változásakor egyezteti a személyalbumok címketagságát, ütemez háttérmunkát és állítja a panel frissítési jelzőjét; a #7325 "minden OK-n" állítása pontosítva, fejlesztői jegytörzzsel, a fejlesztés a #7373 jegyen (#7331).
 - Kutatás: a szerkesztő Hangolás fülének teljes folyamata az eredetivel összevetve: a Gyakori javítások Derítőfény-csúszkája az eredetiben külön réteget ír, a pipetta fülváltáskor kikapcsol, az Alkalmaz és a Mégse nincs a fülön (#7345).
 - Kutatás: az eredeti Picasa Csoportos szerkesztés parancsai szerkesztőben nyitott képnél a csempekattintással egyenértékű hatást adnak (nem csak fület váltanak), a Ctrl+Shift+B is a megnyitott képre hat, az effekt-paraméterpanelen pedig nincs Alaphelyzet gomb. Az írásvédett-kapu az eredetiben nem írásvédettséget vizsgál: csak az iPhoto- vagy Apple Photos-könyvtár alatti mappa képein kérdez a szerkesztés előtt ("Make a Copy" / "Cancel Edit"), sima írásvédett mappánál nem (#7346).
 - A szerkesztőben az újravágás most az eredeti Picasa módján működik: ha a szerkesztési lánc végén már vágás áll, az Alkalmaz azt írja át a hozzáfűzés helyett, így a lánc nem nő feleslegesen, és két egymás utáni vágást egyetlen Visszavonás vesz vissza (az Újra a második vágást hozza vissza); ha más művelet áll a végén, az új vágás a lánc végére kerül. Üres kijelöléssel az Alkalmaz kiveszi a lánc végén álló vágást, és ez visszavonható (#7367).
