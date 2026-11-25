@@ -7,6 +7,48 @@ fájl a lényegi, ember által írt kiemeléseket rögzíti.
 
 ## [Nem kiadott]
 
+## [1.0.184] - 2026-11-25
+
+- Kutatás: nagyrészt kiderült, hogyan javítja az eredeti Picasa a kézzel bekeretezett vörösszemet (azt még nem tudjuk, mely képpontokat tekinti szemnek); a programban még nem változott semmi (#7460).
+- Ha a Mentés, a visszavonás vagy a Visszaállítás közben egy .picasa.ini már átíródott, és csak utána jön hiba, az is visszaáll az előző tartalmára, így a szerkesztések nem vesznek el (#7473).
+- Ha Mentéskor a kép cseréje már megtörtént, és csak utána jön hiba, a program visszaírja a mentés előtti képet (ha ez nem sikerül, befejezi a mentést), így a szerkesztés nem kerülhet rá kétszer a képre, és a megőrzött eredeti sem törlődik (#7476).
+
+## [1.0.183] - 2026-11-25
+
+- Ha a Mentés a .picasa.ini írásakor hiúsul meg, a kép és az ini a mentés előtti marad, nem marad félbemaradt másolat a .picasaoriginals mappában, és az „Utolsó mentés visszavonása” sem törli a szerkesztéseket (#7469).
+
+## [1.0.182] - 2026-11-25
+
+- Ha a Mentés már a fájl kiírása közben hiúsul meg (például betelt a lemez), nem marad félbemaradt másolat a .picasaoriginals mappában, és utána az „Utolsó mentés visszavonása” sem törli a szerkesztéseket (#7466).
+
+## [1.0.181] - 2026-11-25
+
+- Lezárult a szerkesztő Alapjavítások lapjának összevetése: az eredeti Picasa Vörösszem-javítása, az „Undo Red Eye” megerősítése és a mentés is mérve; a javított képpontok eltérése külön kutatási jegyre került (#7327).
+- Kiderült, miért marad „.jpg.jpg” fájl írásvédett mentés után az eredeti Picasában: a JPEG-író az ideiglenes „.tmp” véget „.jpg”-re cseréli, és sikertelen csere után a kész kép megmarad (#7428).
+- Kiderült az eredeti Picasa Szöveg-forgatásának teljes szabálya: a szög a húzás végpontjától függ, és 45° és 15° körül lágyan tapad; a mért sort 0,15°-on belül visszaadja (#7435).
+- Az Opciókban Tallózással beállított új importcél az OK után a figyelt mappák közé kerül, mint az eredetiben (#7437).
+- A Szöveg eszközben a kijelölt blokk forgatókoronggal forgatható, mint az eredetiben: a szög 15° és 45° többszörösei körül lágyan tapad, és radiánban mentődik (#7457).
+- A Vörösszem kézi dobozának viselkedése az eredeti Picasában képpontra mérve; a pontos szabály binárisból még kutatás alatt (#7460).
+- Ha a Mentés nem tudja lecserélni a fájlt (például írásvédett), az eredeti változatlan marad, a kész kép pedig mellette .jpg.jpg végű néven megmarad, mint az eredetiben; tele lemeznél a hibaablak száma is az eredetit követi (#7462).
+
+## [1.0.180] - 2026-11-24
+
+- A futásidő-tábla pótlása a hiányzó 160 app-tesztfájllal (#7454).
+- Kiderült, hogyan viselkedik az eredeti Picasa Retusálás eszköze Mégse gombra félbehagyott foltnál, és hogy a Szöveg forgatókorongja a 15° többszörösei körül tapad, a forgatást pedig radiánban tárolja (#7327).
+- Kiderült, hogy az eredeti Picasa az Opciókban beállított importcélt a figyelt mappák közé veszi fel (#7330).
+- Kiderült, mely kódrészek írják az eredeti Picasa Hangolás-színmintakorongjának színét; hogy a pipettával vett semleges szín jut-e a korongra, az még nyitott kérdés (#7345).
+- Lezárult a Hangolás színmintakorongjának vizsgálata: az eredeti Picasa binárisában nincs eltérésre utaló út, ezért a PicasaPy a pipettával vett semleges színt mutatja a korongon, ahogy eddig (#7422).
+- A Retusálás Mégse gombja félbehagyott foltnál csak a foltot dobja el, és az eszköz nyitva marad; a panel üres területére kattintás is eldobja a foltot (#7426).
+- Kiderült, hogy írásvédett fájl mentésekor az eredeti Picasa a sikertelen csere után otthagyja az új kimenetet „.jpg.jpg” néven, és biztonsági másolatot sem készít (#7428).
+- A Polaroid effekt apró képen a renderlánc méretkorlátján belül marad (#7429).
+- A bal hasáb hónapos fejlécei Windowson is működnek 1970 előtti módosítási időnél, nem dől el a lista (#7430).
+- A Vörösszem panel szövegének sorköze az eredetiben mért 14 képpont, így Windowson keskeny panelnél sem lóg ki a szöveg (#7431).
+- A Szöveg eszköz rajzolója hiba esetén is rendesen lezárja a festést, így egy rajzolási hiba nem omlasztja össze a programot (#7432).
+- Kiderült az eredeti Picasa Szöveg-forgatásának szögképlete és a 45° és 15° körüli lágy tapadás szabálya; a pontos visszajátszás még kutatás alatt (#7435).
+- A Retusálás panel háttérterülete nem lóg ki a görgethető részből (#7440).
+- A mentési hibaablak címe lemezhiba, névütközés és formátumhiba esetén „Error” (magyarul „Hiba”), mint az eredetiben, nem „Save” (#7443).
+- A mentési lemezhiba-ablak hibaszáma mostantól az eredeti Picasa belső számát mutatja: írásvédett célnál `hiba(11)`, hiányzó fájlnál vagy útnál `hiba(10)`, minden más hibánál `hiba(2)` (a rendszer saját kódja helyett; a tele lemez száma egyelőre változatlan) (#7449).
+
 ## [1.0.179] - 2026-11-24
 
 ### Javítva

@@ -40,7 +40,11 @@ Flickable {
     // fülek `tabContentHeight`-je a #659-ben kapott. Beégetett 10 helyett
     // az `y`-t olvassuk, hogy a margó a panelek fájljaiban maradjon az
     // egyetlen igazságforrás.
+    // #7440: legalább a látható sáv magassága, hogy a Retusálás panel
+    // egérterülete (lent) a gombsor alatti üres sávot is lefedje anélkül,
+    // hogy kilógna a tartalomból; görgetés így is csak magasabb panelnél van.
     contentHeight: Math.max(
+        modeToolScroll.height,
         cropModePanel.visible
             ? cropModePanel.y + cropModePanel.implicitHeight : 0,
         retouchModePanel.visible
@@ -51,6 +55,42 @@ Flickable {
             ? textModePanel.y + textModePanel.implicitHeight : 0)
     boundsBehavior: Flickable.StopAtBounds
     ScrollBar.vertical: PicasaScrollBar {}
+
+    // A Retusálás panel vezérlőre nem eső területének kattintása eldobja a
+    // félbehagyott foltot. A MouseArea a vezérlők mögött van, így a gombok és
+    // a csúszka saját kattintásai változatlanul működnek. A tartalom
+    // legalább a látható sáv magas (#7440), így a gombsor alatti üres sáv
+    // is ide tartozik.
+    MouseArea {
+        id: retouchPendingCancelArea
+        objectName: "retouchPendingCancelArea"
+        anchors.fill: parent
+        z: -1
+        enabled: modeToolScroll.panel.retouchActive
+            && modeToolScroll.panel.retouchPatchPending
+        acceptedButtons: Qt.LeftButton
+
+        function hitsRetouchControl(item, point) {
+            const child = item.childAt(point.x, point.y)
+            if (!child)
+                return false
+            if (["retouchBrushSizeSlider", "retouchResetButton",
+                 "retouchUndoPatchButton", "retouchRedoPatchButton",
+                 "retouchApplyButton", "retouchCancelButton"]
+                    .indexOf(child.objectName) !== -1)
+                return true
+            return hitsRetouchControl(
+                child, child.mapFromItem(item, point.x, point.y))
+        }
+
+        onClicked: function(mouse) {
+            const point = retouchModePanel.mapFromItem(
+                retouchPendingCancelArea, mouse.x, mouse.y)
+            if (hitsRetouchControl(retouchModePanel, point))
+                return
+            modeToolScroll.panel.retouchCancelRequested()
+        }
+    }
 
     // ---- "crop" mód: Fotó vágása ----
     EditorCropPanel {
